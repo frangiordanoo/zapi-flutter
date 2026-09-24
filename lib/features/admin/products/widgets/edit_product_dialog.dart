@@ -69,16 +69,25 @@ class _EditProductDialogState extends State<EditProductDialog> {
         ],
       ),
       actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      // OJO: AlertDialog envuelve `actions` en un OverflowBar, que no
+      // acepta widgets Expanded directamente (rompe con un
+      // "Incorrect use of ParentDataWidget"). Por eso los botones van
+      // dentro de un Row propio, pasado como UN solo elemento de
+      // `actions`.
       actions: [
-        Expanded(
-          child: SecondaryButton(
-            label: 'Cancelar',
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: PrimaryButton(label: 'Editar', onPressed: _handleSave),
+        Row(
+          children: [
+            Expanded(
+              child: SecondaryButton(
+                label: 'Cancelar',
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: PrimaryButton(label: 'Editar', onPressed: _handleSave),
+            ),
+          ],
         ),
       ],
     );

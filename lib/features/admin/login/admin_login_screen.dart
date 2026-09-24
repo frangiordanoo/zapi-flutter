@@ -85,14 +85,14 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Iniciar Sesión', style: AppTextStyles.screenTitle),
+              const Text('Iniciar Sesión', style: AppTextStyles.screenTitle),
               const SizedBox(height: 4),
-              Text(
+              const Text(
                 'Ingresá las credenciales de Zapi',
                 style: AppTextStyles.caption,
               ),
               const SizedBox(height: 32),
-              Text('Correo Electrónico', style: AppTextStyles.bodyBold),
+              const Text('Correo Electrónico', style: AppTextStyles.bodyBold),
               const SizedBox(height: 8),
               TextField(
                 controller: _emailController,
@@ -103,7 +103,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              Text('Contraseña', style: AppTextStyles.bodyBold),
+              const Text('Contraseña', style: AppTextStyles.bodyBold),
               const SizedBox(height: 8),
               TextField(
                 controller: _passwordController,

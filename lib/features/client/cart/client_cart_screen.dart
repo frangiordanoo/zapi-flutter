@@ -90,7 +90,7 @@ class ClientCartScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Total', style: AppTextStyles.sectionTitle),
+                    const Text('Total', style: AppTextStyles.sectionTitle),
                     Text(Formatters.currency(cart.total),
                         style: AppTextStyles.screenTitle),
                   ],

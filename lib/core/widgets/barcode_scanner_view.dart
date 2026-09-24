@@ -93,9 +93,9 @@ class BarcodeScannerView extends StatelessWidget {
               color: Colors.black,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Stack(
+            child: const Stack(
               children: [
-                const Center(
+                Center(
                   child: Icon(
                     Icons.camera_alt_outlined,
                     color: Colors.white24,
@@ -103,7 +103,7 @@ class BarcodeScannerView extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(28),
+                  padding: EdgeInsets.all(28),
                   child: _ScanFrame(),
                 ),
               ],
@@ -116,7 +116,7 @@ class BarcodeScannerView extends StatelessWidget {
           style: AppTextStyles.bodyBold,
         ),
         const SizedBox(height: 4),
-        Text(
+        const Text(
           'Centra el código de barras con la guía.',
           style: AppTextStyles.caption,
           textAlign: TextAlign.center,

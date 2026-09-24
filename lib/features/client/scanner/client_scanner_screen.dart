@@ -110,7 +110,7 @@ class _ClientScannerScreenState extends State<ClientScannerScreen> {
               ),
               const SizedBox(height: 20),
               if (cart.items.isNotEmpty) ...[
-                Text('Productos escaneados',
+                const Text('Productos escaneados',
                     style: AppTextStyles.sectionTitle),
                 const SizedBox(height: 8),
                 ...cart.items.map(
@@ -125,7 +125,7 @@ class _ClientScannerScreenState extends State<ClientScannerScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Total de la compra',
+                    const Text('Total de la compra',
                         style: AppTextStyles.sectionTitle),
                     Text(Formatters.currency(cart.total),
                         style: AppTextStyles.screenTitle),

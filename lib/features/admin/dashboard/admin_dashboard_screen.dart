@@ -86,7 +86,7 @@ class AdminDashboardScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Row(
+            const Row(
               children: [
                 Expanded(
                   child: _StatCard(
@@ -94,7 +94,7 @@ class AdminDashboardScreen extends StatelessWidget {
                     value: '${MockStats.totalOrders}',
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: _StatCard(
                     label: 'Producto más vendido',
@@ -105,26 +105,26 @@ class AdminDashboardScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            Text('Productos más vendidos', style: AppTextStyles.sectionTitle),
+            const Text('Productos más vendidos', style: AppTextStyles.sectionTitle),
             const SizedBox(height: 12),
-            StatsBarChart(data: MockStats.topProducts),
+            const StatsBarChart(data: MockStats.topProducts),
             const SizedBox(height: 24),
-            Text('Día de la semana con más ventas',
+            const Text('Día de la semana con más ventas',
                 style: AppTextStyles.sectionTitle),
             const SizedBox(height: 12),
-            StatsBarChart(data: MockStats.salesByWeekday),
+            const StatsBarChart(data: MockStats.salesByWeekday),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Productos con poco stock',
+                const Text('Productos con poco stock',
                     style: AppTextStyles.sectionTitle),
                 Text('${lowStockProducts.length}', style: AppTextStyles.price),
               ],
             ),
             const SizedBox(height: 8),
             if (lowStockProducts.isEmpty)
-              Text('No hay productos con poco stock.',
+              const Text('No hay productos con poco stock.',
                   style: AppTextStyles.caption)
             else
               ...lowStockProducts.map(
