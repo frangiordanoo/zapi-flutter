@@ -1,0 +1,66 @@
+name: zapi
+description: "Zapi - Aplicacion movil de autoservicio para kiosco."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+
+  # --- Dependencias del proyecto ---
+  #
+  # provider: manejo de estado simple y compartido (carrito de compras,
+  # catalogo de productos). Elegido en vez de Riverpod/Bloc porque el
+  # equipo es junior y todavia no necesitamos algo mas complejo. Ver
+  # lib/state/ para el detalle. Migrar a Riverpod/Bloc en el futuro NO
+  # deberia requerir reescribir las pantallas, solo la capa de estado.
+  provider: ^6.1.2
+
+  # flutter_svg: para poder renderizar los SVG propios de Zapi
+  # (ver assets/svg/). Todavia no tenemos los archivos finales, asi que
+  # las pantallas usan placeholders (ver lib/core/widgets/zapi_logo.dart)
+  # hasta que se agreguen los SVG reales.
+  flutter_svg: ^2.0.10+1
+
+  # mobile_scanner: libreria estable para lectura de codigos de barras
+  # usando la camara del dispositivo. Se integra dentro de
+  # lib/core/widgets/barcode_scanner_view.dart. Requiere permisos de
+  # camara en Android/iOS (ver README.md / TEAM.md, seccion Scanner).
+  mobile_scanner: ^5.2.3
+
+  # fl_chart: graficos simples y estables para el dashboard de
+  # estadisticas del administrador (lib/features/admin/dashboard).
+  fl_chart: ^0.68.0
+
+  # intl: formateo de moneda y fechas (precios en pesos, fecha de alta
+  # de producto, etc.)
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  # -----------------------------------------------------------------
+  # ASSETS
+  # -----------------------------------------------------------------
+  # Las carpetas ya estan creadas y declaradas para que cualquier
+  # integrante pueda copiar un archivo adentro y usarlo sin tener que
+  # tocar este pubspec.yaml de nuevo.
+  #
+  # assets/svg    -> logo e ilustraciones de Zapi en formato SVG.
+  #                  (todavia vacia, ver comentario en
+  #                  lib/features/splash/splash_screen.dart)
+  # assets/images -> imagenes rasterizadas (png/jpg) si hicieran falta.
+  # assets/icons  -> iconos propios que no vengan de Material Icons.
+  assets:
+    - assets/svg/
+    - assets/images/
+    - assets/icons/
