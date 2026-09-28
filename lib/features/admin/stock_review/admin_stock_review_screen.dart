@@ -7,50 +7,13 @@ import 'package:zapi/core/widgets/primary_button.dart';
 import 'package:zapi/models/product.dart';
 import 'package:zapi/state/product_catalog.dart';
 
-// ============================================================
-// RESPONSABLE: Renzo
-//
-// TAREA:
-// Pantalla de revision fisica de stock.
-//
-// OBJETIVO:
-// Mostrar todos los productos con su stock registrado y un input
-// numerico para la cantidad contada fisicamente. Al presionar
-// "Aceptar", actualizar el stock localmente (mock) con la cantidad
-// contada.
-//
-// DEBE UTILIZAR:
-// - AppHeader, PrimaryButton
-// - ProductCatalog (Provider) para leer productos y actualizar stock
-//
-// NO DEBE HACER:
-// - Ninguna llamada al backend.
-//
-// POSTERIORMENTE:
-// Al presionar "Aceptar" va a haber que enviar al backend la cantidad
-// fisica contada para actualizar el stock real (por ejemplo un PATCH
-// por producto, o un endpoint batch). Hoy eso se simula recorriendo los
-// controllers y llamando a ProductCatalog.updateStock por cada
-// producto modificado.
-//
-// PROMPT PARA IA:
-//
-// "Estoy trabajando en una app Flutter (Material 3, Provider) llamada
-// Zapi. Tengo la pantalla
-// lib/features/admin/stock_review/admin_stock_review_screen.dart
-// (AdminStockReviewScreen) que lista productos desde un ProductCatalog
-// (ChangeNotifier) y para cada uno muestra un TextField numerico
-// (con un TextEditingController por producto) donde se carga la
-// cantidad contada fisicamente. Al tocar 'Aceptar' se recorre la lista
-// y se llama a context.read<ProductCatalog>().updateStock(id, cantidad)
-// por cada producto cuyo campo no este vacio. Quiero que mejores la
-// UX: resaltar visualmente los productos donde la cantidad contada
-// difiere del stock registrado, y mostrar un SnackBar de confirmacion
-// al aceptar. No agregues ninguna llamada HTTP real, todo sigue siendo
-// local via ProductCatalog."
-// ============================================================
-
 /// Pantalla de revision fisica de stock.
+///
+/// Al tocar "Aceptar" actualiza el stock de cada producto modificado
+/// via `ProductCatalog.updateStock`. Cuando exista backend, esto deberia
+/// mandar la cantidad fisica contada a un endpoint real (por ejemplo un
+/// PATCH por producto o un endpoint batch) en vez de actualizar el
+/// catalogo local directamente.
 class AdminStockReviewScreen extends StatefulWidget {
   const AdminStockReviewScreen({super.key});
 

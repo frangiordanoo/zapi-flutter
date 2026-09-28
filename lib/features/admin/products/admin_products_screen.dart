@@ -10,51 +10,10 @@ import 'package:zapi/features/admin/products/widgets/edit_product_dialog.dart';
 import 'package:zapi/models/product.dart';
 import 'package:zapi/state/product_catalog.dart';
 
-// ============================================================
-// RESPONSABLE: Facundo Fornes
-//
-// TAREA:
-// Pantalla de administracion de productos (listar, buscar, editar,
-// borrar, ir a Agregar producto).
-//
-// OBJETIVO:
-// Ya esta resuelto el flujo completo con datos mock: buscar por nombre,
-// editar nombre/precio (EditProductDialog), soft-delete
-// (DeleteProductDialog + ProductCatalog.softDeleteProduct) y navegar a
-// Add Product con el boton flotante "+". Revisar que el comportamiento
-// sea el esperado y pulir detalles visuales/UX si hace falta (por
-// ejemplo loading states, mensajes de confirmacion).
-//
-// DEBE UTILIZAR:
-// - AppHeader, AppSearchBar, ProductItem
-// - EditProductDialog, DeleteProductDialog
-// - ProductCatalog (Provider) para leer/editar/borrar productos
-//
-// NO DEBE HACER:
-// - Borrar productos de verdad (siempre soft delete, ver
-//   ProductCatalog.softDeleteProduct / lib/models/product.dart).
-// - Permitir editar codigo, stock o categoria desde este modal.
-//
-// PROMPT PARA IA:
-//
-// "Estoy trabajando en una app Flutter (Material 3, Provider) llamada
-// Zapi. Tengo la pantalla
-// lib/features/admin/products/admin_products_screen.dart
-// (AdminProductsScreen) que lista productos desde un ProductCatalog
-// (ChangeNotifier), con buscador (AppSearchBar), boton editar que abre
-// un EditProductDialog (permite cambiar solo nombre y precio) y boton
-// borrar que abre un DeleteProductDialog de confirmacion y hace un
-// soft delete llamando a ProductCatalog.softDeleteProduct(id) (el
-// producto no se borra de la lista de datos, solo se marca isDeleted=true
-// y deja de aparecer). Tambien hay un FloatingActionButton '+' que
-// navega a RouteNames.adminAddProduct. Quiero que revises el archivo y
-// mejores la experiencia (por ejemplo mostrar un SnackBar de
-// confirmacion al editar/borrar, manejar el estado de carga
-// ProductCatalog.isLoading) sin cambiar el contrato de ProductCatalog
-// ni permitir edicion de codigo/stock/categoria."
-// ============================================================
-
-/// Pantalla de administracion de productos.
+/// Pantalla de administracion de productos: buscar, editar (nombre y
+/// precio, via [EditProductDialog]), borrar (soft delete, via
+/// [DeleteProductDialog] + `ProductCatalog.softDeleteProduct`, nunca se
+/// borra de verdad) y navegar a Add Product con el boton flotante "+".
 class AdminProductsScreen extends StatefulWidget {
   const AdminProductsScreen({super.key});
 

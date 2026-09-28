@@ -9,59 +9,13 @@ import 'package:zapi/core/utils/formatters.dart';
 import 'package:zapi/state/cart_controller.dart';
 import 'package:zapi/state/product_catalog.dart';
 
-// ============================================================
-// RESPONSABLE: Gonza
-//
-// TAREA:
-// Terminar la integracion visual de la pantalla de Scanner del
-// cliente. La camara en si (BarcodeScannerView) es otra tarea tuya
-// (ver lib/core/widgets/barcode_scanner_view.dart); esta pantalla ya
-// esta conectada a ese widget y al carrito compartido.
-//
-// OBJETIVO:
-// Al escanear un codigo, buscar el producto correspondiente (con
-// ProductCatalog.findByCode, que hoy busca en datos mock) y agregarlo
-// al carrito. Mostrar debajo de la camara el producto recien
-// encontrado (o el ultimo agregado) con controles +/- y eliminar, y si
-// el carrito tiene productos, mostrar el total y el boton "Pagar".
-//
-// DEBE UTILIZAR:
-// - BarcodeScannerView (camara)
-// - CartItemTile, PrimaryButton
-// - CartController y ProductCatalog (Provider)
-//
-// NO DEBE HACER:
-// - Implementar el pago real. El boton "Pagar" NO debe llamar a ningun
-//   backend ni a Mercado Pago todavia: por ahora solo debe existir
-//   visualmente (ver TODO puntual mas abajo, en el onPressed).
-//
-// POSTERIORMENTE:
-// El boton "Pagar" va a disparar el flujo de cobro real (Mercado
-// Pago / backend). Cuando eso se implemente, probablemente convenga
-// sacar esa logica a un `services/payment_service.dart` nuevo, del
-// mismo modo que `ProductService`.
-//
-// PROMPT PARA IA:
-//
-// "Estoy trabajando en una app Flutter (Material 3, Provider) llamada
-// Zapi. Tengo la pantalla
-// lib/features/client/scanner/client_scanner_screen.dart
-// (ClientScannerScreen) que usa un widget BarcodeScannerView para
-// escanear codigos de barra, un CartController (ChangeNotifier) para
-// el carrito compartido, y un ProductCatalog (ChangeNotifier) que
-// expone `findByCode(String code)` para buscar productos por codigo
-// (hoy busca en datos mock, en el futuro va a pegarle al backend, pero
-// eso no me interesa ahora). Quiero que revises/mejores el flujo:
-// al detectar un codigo con BarcodeScannerView.onCodeDetected, buscar
-// el producto con ProductCatalog.findByCode, si existe agregarlo al
-// carrito con CartController.addProduct y mostrar algun feedback breve
-// (snackbar) si el codigo no corresponde a ningun producto. Mantene el
-// boton 'Pagar' como un boton puramente visual (no debe hacer ninguna
-// llamada real), solo agregale un TODO bien visible indicando que ahi
-// va a ir la integracion con Mercado Pago/backend."
-// ============================================================
-
 /// Pantalla de escaneo del cliente.
+///
+/// Usa [BarcodeScannerView] (camara real) para detectar un codigo,
+/// busca el producto con `ProductCatalog.findByCode` y lo agrega al
+/// carrito compartido (`CartController`). El boton "Pagar" es
+/// intencionalmente solo visual: todavia falta integrar un medio de
+/// pago real (Mercado Pago / backend), ver el TODO en su `onPressed`.
 class ClientScannerScreen extends StatefulWidget {
   const ClientScannerScreen({super.key});
 

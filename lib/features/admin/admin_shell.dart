@@ -4,15 +4,6 @@ import 'package:zapi/features/admin/products/admin_products_screen.dart';
 import 'package:zapi/features/admin/stock/admin_stock_screen.dart';
 import 'package:zapi/features/admin/widgets/admin_bottom_navigation.dart';
 
-// ============================================================
-// RESPONSABLE: Facundo Palavecino
-//
-// Este archivo es parte de la estructura GLOBAL del admin (routing +
-// navegacion), no de una pantalla individual. En principio no deberia
-// necesitar cambios grandes, pero si el equipo agrega una cuarta seccion
-// al bottom nav del admin, es aca donde hay que agregar el tab nuevo.
-// ============================================================
-
 /// Contenedor de las 3 secciones principales del administrador
 /// (Estadisticas / Productos / Stock).
 ///

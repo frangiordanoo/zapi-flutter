@@ -7,11 +7,13 @@ gestionar productos, stock y ver estadísticas de ventas.
 
 ## Objetivo de este proyecto
 
-Este repo es el **punto de partida arquitectónico** para que el equipo
-(7 personas, sin experiencia previa significativa en Flutter) pueda
-trabajar en paralelo sobre una base clara. **No** implementa todavía
-backend, pagos ni autenticación real: todo eso está simulado con datos
-mock, dejando la estructura lista para conectarlo después.
+Este repo arrancó como una base arquitectónica para que el equipo (7
+personas, sin experiencia previa significativa en Flutter) trabajara en
+paralelo, y terminó de cerrarse como demo funcional completa para
+entregar. **No** implementa backend, pagos ni autenticación real: todo
+eso está simulado con datos mock (no hay servidor propio de Zapi), pero
+la app es navegable de punta a punta, incluyendo escaneo de código de
+barras con cámara real.
 
 ## Tecnologías
 
@@ -84,16 +86,17 @@ flutter run
 
 - Todas las pantallas listadas arriba, navegables de punta a punta.
 - Routing centralizado (`lib/app/router/`).
-- Componentes reutilizables (header, botones, items de lista, buscador, selector de cantidad, scanner placeholder).
+- Componentes reutilizables (header, botones, items de lista, buscador, selector de cantidad, scanner).
 - Modelos y datos mock realistas.
 - Capa de servicios preparada para reemplazar mocks por un backend real sin tocar las pantallas.
+- Escaneo de código de barras con **cámara real** (`mobile_scanner`, funciona en Android/iOS/Web/desktop), con un botón "Simular escaneo" de respaldo por si no hay cámara disponible o un producto físico a mano.
+- Validación de formularios en Login y Add Product.
 
 ## Qué está mockeado
 
 - **Productos**: `lib/mock/mock_products.dart`, servidos vía `MockProductService` (simula latencia de red).
 - **Estadísticas**: `lib/mock/mock_stats.dart`.
-- **Autenticación**: el login acepta cualquier valor, no valida contra nada.
-- **Escaneo de código de barras**: `BarcodeScannerView` simula la detección con un botón de debug (`MockBarcodeService`); la cámara real está pendiente de integrar (ver comentario `RESPONSABLE: Gonza` en ese archivo).
+- **Autenticación**: el login acepta cualquier valor (valida solo que el formulario esté completo), no valida contra ningún backend.
 - **Pago**: el botón "Pagar" en el Scanner es solo visual, no llama a ningún servicio.
 
 ## Qué queda pendiente de backend
@@ -103,5 +106,4 @@ flutter run
 - Autenticación real de administrador.
 - Integración de pago (Mercado Pago u otro medio).
 - Persistencia real de stock (hoy se actualiza solo en memoria).
-- Lectura real de código de barras por cámara (`mobile_scanner`, ver `lib/core/widgets/barcode_scanner_view.dart`).
 - SVG oficiales de Zapi (`assets/svg/`, ver `assets/svg/PLACEHOLDER.md`).

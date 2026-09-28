@@ -1,5 +1,12 @@
 # Equipo y forma de trabajo - Zapi
 
+> **Nota:** por tiempo de entrega, la funcionalidad completa (incluyendo
+> el escaneo real con cámara, validaciones de formulario y demás
+> pendientes) se terminó de implementar sin dividir por integrante. Esta
+> tabla queda como referencia de cómo se pensó originalmente repartir el
+> trabajo y sigue siendo útil para entender qué pantalla explica cada
+> parte de la arquitectura.
+
 ## Integrantes y responsabilidades
 
 ### Administrador

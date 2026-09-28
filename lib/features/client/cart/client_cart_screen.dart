@@ -10,45 +10,11 @@ import 'package:zapi/core/widgets/secondary_button.dart';
 import 'package:zapi/core/utils/formatters.dart';
 import 'package:zapi/state/cart_controller.dart';
 
-// ============================================================
-// RESPONSABLE: Misa
-//
-// TAREA:
-// Esta es la pantalla principal del cliente (el carrito). Hoy ya
-// funciona visualmente con datos mock/estado compartido
-// (CartController), pero es el punto de partida para pulir la
-// experiencia de "Client Home".
-//
-// OBJETIVO:
-// Mostrar el carrito de compras actual, permitir modificar cantidades y
-// eliminar productos, y navegar a Scanner / Product List.
-//
-// DEBE UTILIZAR:
-// - AppHeader, CartItemTile, EmptyState, PrimaryButton, SecondaryButton
-// - CartController (context.watch<CartController>()) para leer el
-//   carrito. NO manejar el carrito con estado local de esta pantalla.
-//
-// NO DEBE HACER:
-// - Llamadas al backend.
-// - Logica de pago real (el boton Pagar vive en Scanner, no aca, ver
-//   ese archivo).
-//
-// PROMPT PARA IA:
-//
-// "Estoy trabajando en una app Flutter (Material 3, Provider para
-// estado) llamada Zapi. Tengo la pantalla
-// lib/features/client/cart/client_cart_screen.dart (ClientCartScreen)
-// que muestra el carrito de compras usando un CartController
-// (ChangeNotifier en lib/state/cart_controller.dart) leido con
-// `context.watch<CartController>()`. Quiero que la mejores
-// visualmente (animaciones al agregar/quitar items, mejor manejo del
-// scroll, etc.) sin cambiar la forma en la que se lee/modifica el
-// estado del carrito (siempre a traves de CartController), y sin tocar
-// la navegacion hacia Scanner (RouteNames.clientScanner) ni Product
-// List (RouteNames.clientProductList)."
-// ============================================================
-
 /// Pantalla principal del cliente: el carrito.
+///
+/// Lee y modifica el carrito siempre a traves de [CartController]
+/// (nunca con estado local), para que quede sincronizado con Scanner y
+/// Product List, que comparten la misma instancia via Provider.
 class ClientCartScreen extends StatelessWidget {
   const ClientCartScreen({super.key});
 
