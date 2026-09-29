@@ -77,22 +77,29 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                             const Divider(height: 1, color: AppColors.border),
                         itemBuilder: (context, index) {
                           final product = products[index];
-                          return ProductItem(
-                            product: product,
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit_outlined,
-                                      color: AppColors.primary),
-                                  onPressed: () => _handleEdit(product),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline,
-                                      color: AppColors.danger),
-                                  onPressed: () => _handleDelete(product),
-                                ),
-                              ],
+                          return InkWell(
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              RouteNames.adminProductDetail,
+                              arguments: product,
+                            ),
+                            child: ProductItem(
+                              product: product,
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_outlined,
+                                        color: AppColors.primary),
+                                    onPressed: () => _handleEdit(product),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline,
+                                        color: AppColors.danger),
+                                    onPressed: () => _handleDelete(product),
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         },

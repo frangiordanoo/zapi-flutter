@@ -23,7 +23,24 @@ class ClientCartScreen extends StatelessWidget {
     final cart = context.watch<CartController>();
 
     return Scaffold(
-      appBar: const AppHeader(title: 'Mi carrito'),
+      appBar: AppHeader(
+        title: 'Mi carrito',
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.category_outlined, color: Colors.white),
+              tooltip: 'Categorías',
+              onPressed: () => Navigator.pushNamed(context, RouteNames.clientCategories),
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings_outlined, color: Colors.white),
+              tooltip: 'Configuración',
+              onPressed: () => Navigator.pushNamed(context, RouteNames.clientSettings),
+            ),
+          ],
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zapi/app/router/route_names.dart';
 import 'package:zapi/app/theme/app_colors.dart';
 import 'package:zapi/core/widgets/app_header.dart';
 import 'package:zapi/core/widgets/app_search_bar.dart';
@@ -11,8 +12,14 @@ import 'package:zapi/state/product_catalog.dart';
 
 /// Lista de productos disponibles para que el cliente arme su compra
 /// sin usar la camara.
+///
+/// Si recibe un [categoryFilter] (via `arguments` de la ruta, ver
+/// lib/features/client/categories/client_categories_screen.dart) solo
+/// muestra los productos de esa categoria.
 class ClientProductListScreen extends StatefulWidget {
-  const ClientProductListScreen({super.key});
+  const ClientProductListScreen({super.key, this.categoryFilter});
+
+  final String? categoryFilter;
 
   @override
   State<ClientProductListScreen> createState() =>
@@ -23,9 +30,13 @@ class _ClientProductListScreenState extends State<ClientProductListScreen> {
   String _query = '';
 
   List<Product> _filter(List<Product> products) {
-    if (_query.trim().isEmpty) return products;
+    var result = products;
+    if (widget.categoryFilter != null) {
+      result = result.where((p) => p.category == widget.categoryFilter).toList();
+    }
+    if (_query.trim().isEmpty) return result;
     final query = _query.toLowerCase();
-    return products.where((p) => p.name.toLowerCase().contains(query)).toList();
+    return result.where((p) => p.name.toLowerCase().contains(query)).toList();
   }
 
   @override
@@ -35,7 +46,7 @@ class _ClientProductListScreenState extends State<ClientProductListScreen> {
     final products = _filter(catalog.products);
 
     return Scaffold(
-      appBar: const AppHeader(title: 'Productos', light: true),
+      appBar: AppHeader(title: widget.categoryFilter ?? 'Productos', light: true),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -53,12 +64,19 @@ class _ClientProductListScreenState extends State<ClientProductListScreen> {
                         itemBuilder: (context, index) {
                           final product = products[index];
                           final added = cart.contains(product.id);
-                          return ProductItem(
-                            product: product,
-                            trailing: _AddButton(
-                              added: added,
-                              onPressed: () =>
-                                  context.read<CartController>().addProduct(product),
+                          return InkWell(
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              RouteNames.clientProductDetail,
+                              arguments: product,
+                            ),
+                            child: ProductItem(
+                              product: product,
+                              trailing: _AddButton(
+                                added: added,
+                                onPressed: () =>
+                                    context.read<CartController>().addProduct(product),
+                              ),
                             ),
                           );
                         },

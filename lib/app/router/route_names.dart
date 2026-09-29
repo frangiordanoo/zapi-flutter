@@ -22,6 +22,16 @@ class RouteNames {
   static const String clientCart = '/client/cart';
   static const String clientScanner = '/client/scanner';
   static const String clientProductList = '/client/product-list';
+  static const String clientOnboarding = '/client/onboarding';
+  static const String clientHelp = '/client/help';
+  static const String clientSettings = '/client/settings';
+  static const String clientCategories = '/client/categories';
+
+  /// Recibe un [Product] como `arguments`.
+  static const String clientProductDetail = '/client/product-detail';
+
+  static const String clientCheckout = '/client/checkout';
+  static const String clientOrderConfirmation = '/client/order-confirmation';
 
   // ---- Administrador ------------------------------------------------
   static const String adminLogin = '/admin/login';
@@ -33,4 +43,10 @@ class RouteNames {
 
   static const String adminAddProduct = '/admin/add-product';
   static const String adminStockReview = '/admin/stock-review';
+  static const String adminSalesHistory = '/admin/sales-history';
+  static const String adminNotifications = '/admin/notifications';
+  static const String adminProfile = '/admin/profile';
+
+  /// Recibe un [Product] como `arguments`.
+  static const String adminProductDetail = '/admin/product-detail';
 }

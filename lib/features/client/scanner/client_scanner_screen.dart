@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zapi/app/router/route_names.dart';
 import 'package:zapi/app/theme/app_text_styles.dart';
 import 'package:zapi/core/widgets/app_header.dart';
 import 'package:zapi/core/widgets/barcode_scanner_view.dart';
@@ -89,19 +90,8 @@ class _ClientScannerScreenState extends State<ClientScannerScreen> {
                 PrimaryButton(
                   label: 'Pagar',
                   icon: Icons.payment,
-                  onPressed: () {
-                    // TODO(backend/Mercado Pago): este boton todavia NO
-                    // realiza ningun pago real. Cuando se integre el
-                    // cobro, esto deberia disparar el flujo de Mercado
-                    // Pago / backend (crear preferencia de pago, etc.).
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Pago simulado (falta integrar Mercado Pago)',
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: () =>
+                      Navigator.pushNamed(context, RouteNames.clientCheckout),
                 ),
               ],
             ],
