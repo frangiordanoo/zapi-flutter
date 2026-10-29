@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:zapi/features/admin/dashboard/admin_dashboard_screen.dart';
 import 'package:zapi/features/admin/products/admin_products_screen.dart';
+import 'package:zapi/features/admin/stats/stats_controller.dart';
 import 'package:zapi/features/admin/stock/admin_stock_screen.dart';
 import 'package:zapi/features/admin/widgets/admin_bottom_navigation.dart';
 
@@ -30,13 +32,22 @@ class _AdminShellState extends State<AdminShell> {
     AdminStockScreen(),
   ];
 
+  void _handleTap(int index) {
+    // Las estadisticas dependen de los productos (precios, nombres): se
+    // recalculan al volver a la pestaña por si se editaron o crearon.
+    if (index == 0 && _currentIndex != 0) {
+      context.read<StatsController>().load();
+    }
+    setState(() => _currentIndex = index);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: AdminBottomNavigation(
         currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap: _handleTap,
       ),
     );
   }

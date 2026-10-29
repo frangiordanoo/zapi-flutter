@@ -39,7 +39,7 @@ class AdminProfileScreen extends StatelessWidget {
               label: 'Cerrar sesión',
               color: AppColors.danger,
               onTap: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                RouteNames.adminLogin,
+                RouteNames.clientCart,
                 (route) => false,
               ),
             ),

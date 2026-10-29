@@ -1,4 +1,4 @@
-import 'package:zapi/models/product.dart';
+import 'package:zapi/data/models/product.dart';
 
 /// Representa un producto dentro del carrito, con su cantidad.
 ///

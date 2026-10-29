@@ -4,7 +4,7 @@ import 'package:zapi/app/theme/app_colors.dart';
 import 'package:zapi/app/theme/app_text_styles.dart';
 import 'package:zapi/core/widgets/app_header.dart';
 import 'package:zapi/core/widgets/primary_button.dart';
-import 'package:zapi/models/product.dart';
+import 'package:zapi/data/models/product.dart';
 import 'package:zapi/state/product_catalog.dart';
 
 /// Pantalla de revision fisica de stock.
@@ -46,8 +46,8 @@ class _AdminStockReviewScreenState extends State<AdminStockReviewScreen> {
       final text = _controllers[product.id]?.text.trim();
       if (text == null || text.isEmpty) continue;
       final counted = int.tryParse(text);
-      if (counted == null) continue;
-      await catalog.updateStock(product.id, counted);
+      if (counted == null || counted < 0) continue;
+      await catalog.updateStock(product, counted);
     }
 
     if (!mounted) return;

@@ -4,6 +4,10 @@
          y TEAM.md, seccion "Scanner". -->
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- Necesario para consultar la API de Zapi en builds release (en debug
+         Flutter ya lo agrega). Ver lib/core/network/api_client.dart. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:label="zapi"
         android:name="${applicationName}"

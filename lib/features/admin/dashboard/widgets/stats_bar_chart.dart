@@ -4,18 +4,17 @@ import 'package:zapi/app/theme/app_colors.dart';
 
 /// Grafico de barras simple y reutilizable para el dashboard.
 ///
-/// Recibe los datos ya armados como un Map<etiqueta, valor> (ver
-/// lib/mock/mock_stats.dart) para no acoplarlo a ninguna fuente de
-/// datos en particular.
+/// Recibe los datos ya armados como una lista de (etiqueta, valor) para no
+/// acoplarlo a ninguna fuente de datos en particular. Es una lista y no
+/// un Map para que dos barras con la misma etiqueta no se pisen.
 class StatsBarChart extends StatelessWidget {
-  const StatsBarChart({super.key, required this.data, this.height = 180});
+  const StatsBarChart({super.key, required this.entries, this.height = 180});
 
-  final Map<String, num> data;
+  final List<MapEntry<String, num>> entries;
   final double height;
 
   @override
   Widget build(BuildContext context) {
-    final entries = data.entries.toList();
     final maxValue = entries
         .map((e) => e.value.toDouble())
         .fold<double>(0, (a, b) => a > b ? a : b);
@@ -24,7 +23,7 @@ class StatsBarChart extends StatelessWidget {
       height: height,
       child: BarChart(
         BarChartData(
-          maxY: maxValue * 1.2,
+          maxY: maxValue == 0 ? 1 : maxValue * 1.2,
           gridData: const FlGridData(show: false),
           borderData: FlBorderData(show: false),
           titlesData: FlTitlesData(

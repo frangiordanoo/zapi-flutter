@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:zapi/app/theme/app_colors.dart';
 import 'package:zapi/app/theme/app_text_styles.dart';
 import 'package:zapi/core/widgets/app_header.dart';
+import 'package:zapi/core/widgets/catalog_content.dart';
 import 'package:zapi/core/widgets/empty_state.dart';
 import 'package:zapi/state/product_catalog.dart';
 
@@ -20,7 +21,9 @@ class AdminNotificationsScreen extends StatelessWidget {
     return Scaffold(
       appBar: const AppHeader(title: 'Notificaciones', showBackButton: true),
       body: SafeArea(
-        child: alerts.isEmpty
+        child: CatalogContent(
+          catalog: catalog,
+          child: alerts.isEmpty
             ? const EmptyState(
                 icon: Icons.notifications_none,
                 message: 'No hay alertas de stock por el momento.',
@@ -63,6 +66,7 @@ class AdminNotificationsScreen extends StatelessWidget {
                   );
                 },
               ),
+        ),
       ),
     );
   }

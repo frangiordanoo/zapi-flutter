@@ -6,14 +6,17 @@ import 'package:zapi/core/widgets/app_header.dart';
 import 'package:zapi/core/widgets/barcode_scanner_view.dart';
 import 'package:zapi/core/widgets/cart_item_tile.dart';
 import 'package:zapi/core/widgets/primary_button.dart';
+import 'package:zapi/core/errors/app_exception.dart';
 import 'package:zapi/core/utils/formatters.dart';
+import 'package:zapi/data/models/product.dart';
 import 'package:zapi/state/cart_controller.dart';
 import 'package:zapi/state/product_catalog.dart';
 
 /// Pantalla de escaneo del cliente.
 ///
 /// Usa [BarcodeScannerView] (camara real) para detectar un codigo,
-/// busca el producto con `ProductCatalog.findByCode` y lo agrega al
+/// busca el producto en la API (`GET /products/:code`) con
+/// `ProductCatalog.findByCode` y lo agrega al
 /// carrito compartido (`CartController`). El boton "Pagar" es
 /// intencionalmente solo visual: todavia falta integrar un medio de
 /// pago real (Mercado Pago / backend), ver el TODO en su `onPressed`.
@@ -31,7 +34,15 @@ class _ClientScannerScreenState extends State<ClientScannerScreen> {
     final catalog = context.read<ProductCatalog>();
     final cart = context.read<CartController>();
 
-    final product = await catalog.findByCode(code);
+    final Product? product;
+    try {
+      product = await catalog.findByCode(code);
+    } on AppException catch (e) {
+      if (!mounted) return;
+      setState(() => _statusText = 'No se pudo consultar el producto');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      return;
+    }
 
     if (!mounted) return;
 
@@ -44,7 +55,8 @@ class _ClientScannerScreenState extends State<ClientScannerScreen> {
     }
 
     cart.addProduct(product);
-    setState(() => _statusText = 'Agregado: ${product.name}');
+    final productName = product.name;
+    setState(() => _statusText = 'Agregado: $productName');
   }
 
   @override

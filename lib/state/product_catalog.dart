@@ -1,58 +1,80 @@
 import 'package:flutter/foundation.dart';
-import 'package:zapi/models/product.dart';
-import 'package:zapi/services/product_service.dart';
+import 'package:zapi/core/errors/app_exception.dart';
+import 'package:zapi/data/models/product.dart';
+import 'package:zapi/data/repositories/product_repository.dart';
 
-/// Envuelve un [ProductService] y expone el catalogo de productos como
-/// estado observable, para que tanto las pantallas de cliente
-/// (Product List) como las de administrador (Products, Stock, Stock
-/// Review, Add Product) muestren siempre la misma info y se actualicen
-/// solas cuando algo cambia (por ejemplo: el admin borra un producto y
-/// la lista del cliente deja de mostrarlo).
+/// Estado del catalogo de productos, compartido por las pantallas de
+/// cliente (listado, categorias, scanner) y de administrador (productos,
+/// stock, notificaciones). Es un `ChangeNotifier` simple, igual que
+/// `CartController`: las pantallas leen `products` / `isLoading` /
+/// `errorMessage` y nunca hablan con la API directamente.
 ///
-/// Igual que `CartController`, es un ChangeNotifier simple a proposito.
+/// Si una recarga falla, se CONSERVAN los productos que ya estaban
+/// cargados y se expone `errorMessage` para que la UI avise que pueden
+/// estar desactualizados.
 class ProductCatalog extends ChangeNotifier {
-  ProductCatalog(this._service);
+  ProductCatalog(this._repository);
 
-  final ProductService _service;
+  final ProductRepository _repository;
 
   List<Product> _products = [];
   bool isLoading = false;
+  String? errorMessage;
 
-  /// Productos visibles (no borrados). Es lo que deberian usar casi
-  /// todas las pantallas.
+  /// Productos del catalogo (los que devuelve la API, mas los cambios
+  /// locales descritos en [ProductRepository]).
   List<Product> get products => List.unmodifiable(_products);
 
+  bool _reloadQueued = false;
+
+  /// Recarga el listado desde la API. Si ya hay una carga en curso, encola
+  /// una recarga extra para no perder cambios hechos mientras tanto.
   Future<void> load() async {
+    if (isLoading) {
+      _reloadQueued = true;
+      return;
+    }
     isLoading = true;
     notifyListeners();
-    _products = await _service.getProducts();
-    isLoading = false;
-    notifyListeners();
+    try {
+      do {
+        _reloadQueued = false;
+        try {
+          _products = await _repository.getProducts();
+          errorMessage = null;
+        } on AppException catch (e) {
+          errorMessage = e.message;
+        }
+      } while (_reloadQueued);
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
-  Future<Product?> findByCode(String code) {
-    return _service.getProductByCode(code);
-  }
+  /// Busca un producto con `GET /products/:code`. Devuelve `null` si no
+  /// existe; si falla la conexion lanza una [AppException].
+  Future<Product?> findByCode(String code) => _repository.findByCode(code);
 
+  /// Crea el producto en la API y recarga el listado completo (asi nunca
+  /// quedan duplicados). Lanza [AppException] si la creacion falla.
   Future<void> addProduct(Product product) async {
-    await _service.createProduct(product);
+    await _repository.createProduct(product);
     await load();
   }
 
   Future<void> updateProduct(Product product) async {
-    await _service.updateProduct(product);
+    await _repository.updateProduct(product);
     await load();
   }
 
-  /// Soft delete: el producto deja de aparecer en `products`, pero no se
-  /// borra de verdad (ver comentario en lib/models/product.dart).
-  Future<void> softDeleteProduct(int id) async {
-    await _service.deleteProduct(id);
+  Future<void> deleteProduct(Product product) async {
+    await _repository.deleteProduct(product);
     await load();
   }
 
-  Future<void> updateStock(int id, int newStock) async {
-    await _service.updateStock(id, newStock);
+  Future<void> updateStock(Product product, int newStock) async {
+    await _repository.updateStock(product, newStock);
     await load();
   }
 }

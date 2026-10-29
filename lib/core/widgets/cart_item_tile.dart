@@ -3,7 +3,7 @@ import 'package:zapi/app/theme/app_colors.dart';
 import 'package:zapi/app/theme/app_text_styles.dart';
 import 'package:zapi/core/utils/formatters.dart';
 import 'package:zapi/core/widgets/quantity_selector.dart';
-import 'package:zapi/models/cart_item.dart';
+import 'package:zapi/data/models/cart_item.dart';
 
 /// Fila reutilizable para un producto dentro del carrito. Se usa tanto
 /// en Client Cart como en Client Scanner (el scanner muestra el

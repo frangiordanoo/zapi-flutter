@@ -4,16 +4,17 @@ import 'package:zapi/app/router/route_names.dart';
 import 'package:zapi/app/theme/app_colors.dart';
 import 'package:zapi/core/widgets/app_header.dart';
 import 'package:zapi/core/widgets/app_search_bar.dart';
+import 'package:zapi/core/widgets/catalog_content.dart';
 import 'package:zapi/core/widgets/product_item.dart';
 import 'package:zapi/features/admin/products/widgets/delete_product_dialog.dart';
 import 'package:zapi/features/admin/products/widgets/edit_product_dialog.dart';
-import 'package:zapi/models/product.dart';
+import 'package:zapi/data/models/product.dart';
 import 'package:zapi/state/product_catalog.dart';
 
 /// Pantalla de administracion de productos: buscar, editar (nombre y
 /// precio, via [EditProductDialog]), borrar (soft delete, via
-/// [DeleteProductDialog] + `ProductCatalog.softDeleteProduct`, nunca se
-/// borra de verdad) y navegar a Add Product con el boton flotante "+".
+/// [DeleteProductDialog] + `ProductCatalog.deleteProduct`; todavia sin
+/// endpoint, solo se oculta en esta sesion) y navegar a Add Product con el boton flotante "+".
 class AdminProductsScreen extends StatefulWidget {
   const AdminProductsScreen({super.key});
 
@@ -45,7 +46,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
       builder: (_) => const DeleteProductDialog(),
     );
     if (confirmed != true || !mounted) return;
-    await context.read<ProductCatalog>().softDeleteProduct(product.id);
+    await context.read<ProductCatalog>().deleteProduct(product);
   }
 
   @override
@@ -69,41 +70,42 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
               AppSearchBar(onChanged: (value) => setState(() => _query = value)),
               const SizedBox(height: 12),
               Expanded(
-                child: catalog.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : ListView.separated(
-                        itemCount: products.length,
-                        separatorBuilder: (_, __) =>
-                            const Divider(height: 1, color: AppColors.border),
-                        itemBuilder: (context, index) {
-                          final product = products[index];
-                          return InkWell(
-                            onTap: () => Navigator.pushNamed(
-                              context,
-                              RouteNames.adminProductDetail,
-                              arguments: product,
-                            ),
-                            child: ProductItem(
-                              product: product,
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit_outlined,
-                                        color: AppColors.primary),
-                                    onPressed: () => _handleEdit(product),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline,
-                                        color: AppColors.danger),
-                                    onPressed: () => _handleDelete(product),
-                                  ),
-                                ],
+                child: CatalogContent(
+                  catalog: catalog,
+                  child: ListView.separated(
+                    itemCount: products.length,
+                    separatorBuilder: (_, __) =>
+                        const Divider(height: 1, color: AppColors.border),
+                    itemBuilder: (context, index) {
+                      final product = products[index];
+                      return InkWell(
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          RouteNames.adminProductDetail,
+                          arguments: product,
+                        ),
+                        child: ProductItem(
+                          product: product,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined,
+                                    color: AppColors.primary),
+                                onPressed: () => _handleEdit(product),
                               ),
-                            ),
-                          );
-                        },
-                      ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline,
+                                    color: AppColors.danger),
+                                onPressed: () => _handleDelete(product),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ],
           ),

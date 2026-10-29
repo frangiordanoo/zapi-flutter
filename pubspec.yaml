@@ -36,6 +36,10 @@ dependencies:
   # estadisticas del administrador (lib/features/admin/dashboard).
   fl_chart: ^0.68.0
 
+  # http: cliente HTTP para hablar con la API de Zapi. Solo lo usa
+  # lib/core/network/api_client.dart (ningun otro archivo importa http).
+  http: ^1.2.2
+
   # intl: formateo de moneda y fechas (precios en pesos, fecha de alta
   # de producto, etc.)
   intl: ^0.19.0

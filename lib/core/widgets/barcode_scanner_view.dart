@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:zapi/app/theme/app_colors.dart';
 import 'package:zapi/app/theme/app_text_styles.dart';
-import 'package:zapi/services/barcode_service.dart';
+import 'package:zapi/data/services/barcode_service.dart';
 
 /// Camara para escanear codigos de barra.
 ///

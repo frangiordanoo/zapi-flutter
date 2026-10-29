@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:zapi/models/cart_item.dart';
-import 'package:zapi/models/product.dart';
+import 'package:zapi/data/models/cart_item.dart';
+import 'package:zapi/data/models/product.dart';
 
 /// Estado del carrito, compartido entre Client Home/Cart, Scanner y
 /// Product List.

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zapi/app/theme/app_colors.dart';
 import 'package:zapi/app/theme/app_text_styles.dart';
 import 'package:zapi/core/utils/formatters.dart';
-import 'package:zapi/models/product.dart';
+import 'package:zapi/data/models/product.dart';
 
 /// Fila reutilizable para mostrar un producto en una lista.
 ///

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:zapi/app/theme/app_colors.dart';
 import 'package:zapi/app/theme/app_text_styles.dart';
 import 'package:zapi/core/utils/formatters.dart';
 import 'package:zapi/core/widgets/app_header.dart';
-import 'package:zapi/mock/mock_stats.dart';
-import 'package:zapi/models/product.dart';
+import 'package:zapi/data/models/product.dart';
+import 'package:zapi/features/admin/stats/stats_controller.dart';
 
 /// Vista de detalle de un producto para el administrador: datos
-/// completos + un mini historial de ventas mock de ese producto.
+/// completos + las unidades vendidas segun las ventas simuladas.
 ///
 /// Recibe el [Product] a mostrar como `arguments` de la ruta.
 class AdminProductDetailScreen extends StatelessWidget {
@@ -17,7 +18,8 @@ class AdminProductDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final unitsSold = MockStats.topProducts[product.name] ?? 0;
+    final stats = context.watch<StatsController>().stats;
+    final unitsSold = stats == null ? '—' : '${stats.unitsSoldOf(product.code)}';
 
     return Scaffold(
       appBar: AppHeader(title: product.name, showBackButton: true),
@@ -46,7 +48,12 @@ class AdminProductDetailScreen extends StatelessWidget {
                     value: '${product.stock}',
                     valueColor: product.stock == 0 ? AppColors.danger : null,
                   ),
-                  _InfoRow(label: 'Alta', value: Formatters.date(product.createdAt)),
+                  _InfoRow(
+                    label: 'Alta',
+                    value: product.createdAt == null
+                        ? '—'
+                        : Formatters.date(product.createdAt!),
+                  ),
                 ],
               ),
             ),
@@ -63,8 +70,11 @@ class AdminProductDetailScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Unidades vendidas (mock)', style: AppTextStyles.body),
-                  Text('$unitsSold', style: AppTextStyles.price),
+                  const Expanded(
+                    child: Text('Unidades vendidas (simuladas, 7 días)',
+                        style: AppTextStyles.body),
+                  ),
+                  Text(unitsSold, style: AppTextStyles.price),
                 ],
               ),
             ),

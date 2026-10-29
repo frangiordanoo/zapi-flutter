@@ -6,7 +6,7 @@ import 'package:zapi/core/utils/formatters.dart';
 import 'package:zapi/core/widgets/app_header.dart';
 import 'package:zapi/core/widgets/primary_button.dart';
 import 'package:zapi/core/widgets/quantity_selector.dart';
-import 'package:zapi/models/product.dart';
+import 'package:zapi/data/models/product.dart';
 import 'package:zapi/state/cart_controller.dart';
 
 /// Vista de detalle de un producto para el cliente. Se llega tocando una

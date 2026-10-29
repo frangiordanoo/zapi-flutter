@@ -4,6 +4,7 @@ import 'package:zapi/app/router/route_names.dart';
 import 'package:zapi/app/theme/app_colors.dart';
 import 'package:zapi/app/theme/app_text_styles.dart';
 import 'package:zapi/core/widgets/app_header.dart';
+import 'package:zapi/core/widgets/catalog_content.dart';
 import 'package:zapi/state/product_catalog.dart';
 
 /// Pantalla de categorías: agrupa los productos por [Product.category]
@@ -24,9 +25,11 @@ class ClientCategoriesScreen extends StatelessWidget {
     final categories = catalog.products.map((p) => p.category).toSet().toList()..sort();
 
     return Scaffold(
-      appBar: const AppHeader(title: 'Categorías', light: true),
+      appBar: const AppHeader(title: 'Categorías', light: true, showBackButton: true),
       body: SafeArea(
-        child: GridView.builder(
+        child: CatalogContent(
+          catalog: catalog,
+          child: GridView.builder(
           padding: const EdgeInsets.all(16),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
@@ -65,6 +68,7 @@ class ClientCategoriesScreen extends StatelessWidget {
               ),
             );
           },
+        ),
         ),
       ),
     );

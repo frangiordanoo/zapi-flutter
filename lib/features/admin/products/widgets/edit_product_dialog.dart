@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zapi/core/widgets/primary_button.dart';
 import 'package:zapi/core/widgets/secondary_button.dart';
-import 'package:zapi/models/product.dart';
+import 'package:zapi/data/models/product.dart';
 
 /// Modal para editar nombre y precio de un producto.
 ///

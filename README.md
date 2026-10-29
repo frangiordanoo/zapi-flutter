@@ -27,22 +27,31 @@ barras con cámara real.
 
 ## Arquitectura
 
-Arquitectura por *features*, simple a propósito (sin capas
-innecesarias para un equipo junior):
+Arquitectura por *features* con una capa de datos separada de la UI:
 
 ```
 lib/
-├── app/        -> arranque de la app: routing, tema, Provider
-├── core/       -> constantes, utils y widgets reutilizables entre features
-├── models/     -> Product, CartItem
-├── mock/       -> datos de prueba centralizados
-├── services/   -> interfaces (ProductService) + implementación mock
-├── state/      -> estado compartido (CartController, ProductCatalog)
+├── app/          -> arranque de la app: routing, tema, Provider (inyección de dependencias)
+├── core/
+│   ├── constants/  -> constantes generales y URL de la API
+│   ├── errors/     -> AppException y derivadas (red, timeout, API, formato)
+│   ├── network/    -> ApiClient: único lugar que habla HTTP
+│   ├── utils/
+│   └── widgets/    -> componentes reutilizables (compartidos por Cliente y Admin)
+├── data/
+│   ├── models/       -> Product, CartItem, Sale, SalesStats
+│   ├── services/     -> ProductService (HTTP real), SalesDataSource (interfaz)
+│   ├── repositories/ -> ProductRepository, StatsRepository
+│   └── mocks/        -> MockSalesDataSource (ventas simuladas)
+├── state/        -> estado compartido (CartController, ProductCatalog)
 └── features/
     ├── splash/
-    ├── client/   -> cart, scanner, product_list
-    └── admin/    -> login, dashboard, products, stock, add_product, stock_review
+    ├── client/   -> cart, scanner, product_list, categories, checkout, ...
+    └── admin/    -> login, dashboard, stats (StatsController), products, stock, ...
 ```
+
+Flujo de datos: `API / mock → Service → Repository → Estado (Provider) → Pantalla`.
+Las pantallas nunca llaman a la API ni leen listas mock directamente.
 
 Ver [TEAM.md](TEAM.md) para el detalle de estructura, responsables y
 cómo trabajar en paralelo.
@@ -94,15 +103,15 @@ flutter run
 
 ## Qué está mockeado
 
-- **Productos**: `lib/mock/mock_products.dart`, servidos vía `MockProductService` (simula latencia de red).
-- **Estadísticas**: `lib/mock/mock_stats.dart`.
+- **Productos**: NO son mock. Vienen de la API real (`https://zapi-rqos.onrender.com/products`: listar, buscar por código y crear).
+- **Estadísticas / historial de ventas**: ventas simuladas en `lib/data/mocks/mock_sales_data_source.dart` (volumen bajo, últimos 7 días). Referencian los productos reales por `code`; nombres y precios salen siempre de la API.
 - **Autenticación**: el login acepta cualquier valor (valida solo que el formulario esté completo), no valida contra ningún backend.
 - **Pago**: el botón "Pagar" en el Scanner es solo visual, no llama a ningún servicio.
 
 ## Qué queda pendiente de backend
 
-- Reemplazar `MockProductService` por un `ApiProductService` real que implemente `ProductService` (`lib/services/product_service.dart`).
-- Agregar el campo `isDeleted` (soft delete) al modelo `Product` de Prisma (ver comentario en `lib/models/product.dart`).
+- Endpoints para **editar, borrar y corregir stock** de productos: hoy esos cambios se guardan solo en memoria durante la sesión (ver `lib/data/repositories/product_repository.dart`, marcados con `TODO(backend)`).
+- Endpoint de ventas: reemplazar `MockSalesDataSource` por una implementación HTTP de `SalesDataSource`.
 - Autenticación real de administrador.
 - Integración de pago (Mercado Pago u otro medio).
 - Persistencia real de stock (hoy se actualiza solo en memoria).

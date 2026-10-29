@@ -51,12 +51,16 @@ lib/
 │   ├── router/                # Routing centralizado
 │   └── theme/                 # Colores, tipografia, ThemeData
 ├── core/
-│   ├── constants/              # Constantes generales
+│   ├── constants/              # Constantes generales y URL de la API
+│   ├── errors/                 # AppException y derivadas
+│   ├── network/                # ApiClient (unico lugar que usa http)
 │   ├── utils/                  # Formatters, etc.
 │   └── widgets/                 # Componentes reutilizables (AppHeader, botones, etc.)
-├── models/                    # Product, CartItem
-├── mock/                      # Datos de prueba centralizados
-├── services/                  # Interfaces + implementaciones mock (futuro backend)
+├── data/
+│   ├── models/                 # Product, CartItem, Sale, SalesStats
+│   ├── services/               # ProductService/HttpProductService, SalesDataSource
+│   ├── repositories/           # ProductRepository, StatsRepository
+│   └── mocks/                  # MockSalesDataSource (ventas simuladas)
 ├── state/                     # CartController, ProductCatalog (estado compartido)
 └── features/
     ├── splash/
@@ -87,11 +91,11 @@ igual en web).
 ## Dónde está todo
 
 - **Rutas**: `lib/app/router/` (nombres en `route_names.dart`, mapeo en `app_router.dart`).
-- **Mocks**: `lib/mock/` (`mock_products.dart`, `mock_stats.dart`). Si necesitás más datos de prueba, agregalos ahí.
-- **Modelos**: `lib/models/` (`Product`, `CartItem`).
+- **Mocks**: `lib/data/mocks/` (ventas simuladas para las estadísticas). Los productos NO son mock: vienen de la API.
+- **Modelos**: `lib/data/models/` (`Product`, `CartItem`, `Sale`, `SalesStats`).
 - **Componentes reutilizables**: `lib/core/widgets/` (headers, botones, items de lista, etc.) y `lib/features/admin/widgets/` (navbar del admin).
 - **Estado compartido**: `lib/state/` (`CartController` para el carrito, `ProductCatalog` para el catálogo de productos). Ambos son `ChangeNotifier` simples, expuestos con `provider` desde `lib/app/app.dart`.
-- **Servicios / futuro backend**: `lib/services/` (`ProductService` es la interfaz, `MockProductService` la implementación actual).
+- **Acceso a datos**: `lib/data/services/` (HTTP) y `lib/data/repositories/` (lo que usan las pantallas/estado). El estado de estadísticas del admin está en `lib/features/admin/stats/`.
 
 ## Cómo trabajar en paralelo sin pisarnos
 
@@ -100,7 +104,7 @@ igual en web).
   - `lib/app/router/route_names.dart` y `app_router.dart`
   - `lib/app/theme/*`
   - `lib/state/cart_controller.dart` y `lib/state/product_catalog.dart`
-  - `lib/models/*`
+  - `lib/data/*`
   - `lib/core/widgets/*` (si necesitás cambiar un componente reutilizable para tu pantalla, avisá en el grupo antes, porque afecta a otras pantallas)
   - `pubspec.yaml`
 - Si necesitás agregar un campo al modelo `Product` o cambiar la firma de `CartController`/`ProductCatalog`, coordinalo con el equipo antes (probablemente varias pantallas dependen de eso).

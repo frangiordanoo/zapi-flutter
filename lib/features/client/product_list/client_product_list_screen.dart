@@ -4,9 +4,10 @@ import 'package:zapi/app/router/route_names.dart';
 import 'package:zapi/app/theme/app_colors.dart';
 import 'package:zapi/core/widgets/app_header.dart';
 import 'package:zapi/core/widgets/app_search_bar.dart';
+import 'package:zapi/core/widgets/catalog_content.dart';
 import 'package:zapi/core/widgets/primary_button.dart';
 import 'package:zapi/core/widgets/product_item.dart';
-import 'package:zapi/models/product.dart';
+import 'package:zapi/data/models/product.dart';
 import 'package:zapi/state/cart_controller.dart';
 import 'package:zapi/state/product_catalog.dart';
 
@@ -46,7 +47,11 @@ class _ClientProductListScreenState extends State<ClientProductListScreen> {
     final products = _filter(catalog.products);
 
     return Scaffold(
-      appBar: AppHeader(title: widget.categoryFilter ?? 'Productos', light: true),
+      appBar: AppHeader(
+        title: widget.categoryFilter ?? 'Productos',
+        light: true,
+        showBackButton: true,
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -55,32 +60,33 @@ class _ClientProductListScreenState extends State<ClientProductListScreen> {
               AppSearchBar(onChanged: (value) => setState(() => _query = value)),
               const SizedBox(height: 12),
               Expanded(
-                child: catalog.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : ListView.separated(
-                        itemCount: products.length,
-                        separatorBuilder: (_, __) =>
-                            const Divider(height: 1, color: AppColors.border),
-                        itemBuilder: (context, index) {
-                          final product = products[index];
-                          final added = cart.contains(product.id);
-                          return InkWell(
-                            onTap: () => Navigator.pushNamed(
-                              context,
-                              RouteNames.clientProductDetail,
-                              arguments: product,
-                            ),
-                            child: ProductItem(
-                              product: product,
-                              trailing: _AddButton(
-                                added: added,
-                                onPressed: () =>
-                                    context.read<CartController>().addProduct(product),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                child: CatalogContent(
+                  catalog: catalog,
+                  child: ListView.separated(
+                    itemCount: products.length,
+                    separatorBuilder: (_, __) =>
+                        const Divider(height: 1, color: AppColors.border),
+                    itemBuilder: (context, index) {
+                      final product = products[index];
+                      final added = cart.contains(product.id);
+                      return InkWell(
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          RouteNames.clientProductDetail,
+                          arguments: product,
+                        ),
+                        child: ProductItem(
+                          product: product,
+                          trailing: _AddButton(
+                            added: added,
+                            onPressed: () =>
+                                context.read<CartController>().addProduct(product),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
               PrimaryButton(
