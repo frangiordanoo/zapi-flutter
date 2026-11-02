@@ -108,6 +108,9 @@ class _AdminAddProductScreenState extends State<AdminAddProductScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 BarcodeScannerView(
+                  // Para dar de alta hace falta un codigo que todavia no exista.
+                  simulatedCode: () =>
+                      '779${DateTime.now().millisecondsSinceEpoch % 10000000000}',
                   onCodeDetected: (code) => setState(() => _detectedCode = code),
                 ),
                 const SizedBox(height: 16),

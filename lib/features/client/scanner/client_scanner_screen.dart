@@ -9,6 +9,7 @@ import 'package:zapi/core/widgets/primary_button.dart';
 import 'package:zapi/core/errors/app_exception.dart';
 import 'package:zapi/core/utils/formatters.dart';
 import 'package:zapi/data/models/product.dart';
+import 'package:zapi/data/services/barcode_service.dart';
 import 'package:zapi/state/cart_controller.dart';
 import 'package:zapi/state/product_catalog.dart';
 
@@ -29,6 +30,15 @@ class ClientScannerScreen extends StatefulWidget {
 
 class _ClientScannerScreenState extends State<ClientScannerScreen> {
   String? _statusText;
+  int _simulatedIndex = 0;
+
+  /// "Simular escaneo": recorre los productos reales del catalogo, asi cada
+  /// toque agrega uno distinto (y siempre existe en la API).
+  String _nextSimulatedCode() {
+    final products = context.read<ProductCatalog>().products;
+    if (products.isEmpty) return const MockBarcodeService().fixedCode;
+    return products[_simulatedIndex++ % products.length].code;
+  }
 
   Future<void> _handleCodeDetected(String code) async {
     final catalog = context.read<ProductCatalog>();
@@ -73,6 +83,7 @@ class _ClientScannerScreenState extends State<ClientScannerScreen> {
             children: [
               BarcodeScannerView(
                 statusText: _statusText,
+                simulatedCode: _nextSimulatedCode,
                 onCodeDetected: _handleCodeDetected,
               ),
               const SizedBox(height: 20),

@@ -24,6 +24,7 @@ class BarcodeScannerView extends StatefulWidget {
     super.key,
     required this.onCodeDetected,
     this.statusText,
+    this.simulatedCode,
   });
 
   /// Se llama con el codigo detectado (ej: "7791234567890").
@@ -31,6 +32,11 @@ class BarcodeScannerView extends StatefulWidget {
 
   /// Texto que se muestra debajo de la camara (ej: "Escaneá el producto").
   final String? statusText;
+
+  /// Codigo que entrega el boton "Simular escaneo". Cada pantalla decide
+  /// cual (por ejemplo, el de un producto que existe en la API). Si es
+  /// `null` se usa el codigo fijo de [MockBarcodeService].
+  final String Function()? simulatedCode;
 
   @override
   State<BarcodeScannerView> createState() => _BarcodeScannerViewState();
@@ -41,22 +47,20 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView> {
     detectionSpeed: DetectionSpeed.noDuplicates,
   );
 
-  // Evita disparar onCodeDetected varias veces mientras el mismo codigo
-  // sigue en cuadro (la camara sigue mandando frames continuamente).
-  bool _handled = false;
-
+  // `DetectionSpeed.noDuplicates` ya evita repetir el mismo codigo mientras
+  // sigue en cuadro, y permite escanear el siguiente producto sin salir de
+  // la pantalla.
   void _handleDetect(BarcodeCapture capture) {
-    if (_handled) return;
     final value = capture.barcodes.isEmpty
         ? null
         : capture.barcodes.first.rawValue;
     if (value == null) return;
-    _handled = true;
     widget.onCodeDetected(value);
   }
 
   Future<void> _handleSimulate() async {
-    final code = await const MockBarcodeService().scanBarcode();
+    final code = widget.simulatedCode?.call() ??
+        await const MockBarcodeService().scanBarcode();
     if (code != null) widget.onCodeDetected(code);
   }
 
