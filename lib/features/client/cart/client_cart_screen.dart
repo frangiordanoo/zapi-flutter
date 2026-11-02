@@ -79,6 +79,13 @@ class ClientCartScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
+                PrimaryButton(
+                  label: 'Proceder a la compra',
+                  icon: Icons.shopping_cart_checkout,
+                  onPressed: () =>
+                      Navigator.pushNamed(context, RouteNames.clientCheckout),
+                ),
+                const SizedBox(height: 12),
               ],
               Row(
                 children: [

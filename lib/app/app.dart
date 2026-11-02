@@ -6,11 +6,13 @@ import 'package:zapi/app/theme/app_theme.dart';
 import 'package:zapi/core/constants/app_constants.dart';
 import 'package:zapi/core/network/api_client.dart';
 import 'package:zapi/data/mocks/mock_sales_data_source.dart';
+import 'package:zapi/data/repositories/order_repository.dart';
 import 'package:zapi/data/repositories/product_repository.dart';
 import 'package:zapi/data/repositories/stats_repository.dart';
 import 'package:zapi/data/services/http_product_service.dart';
 import 'package:zapi/features/admin/stats/stats_controller.dart';
 import 'package:zapi/state/cart_controller.dart';
+import 'package:zapi/state/order_controller.dart';
 import 'package:zapi/state/product_catalog.dart';
 
 /// Widget raiz de la app: arma las dependencias (API -> servicio ->
@@ -47,6 +49,15 @@ class ZapiApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => StatsController(context.read<StatsRepository>()),
+        ),
+        Provider<OrderRepository>(
+          create: (context) => OrderRepository(context.read<ProductRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => OrderController(
+            context.read<OrderRepository>(),
+            context.read<ProductCatalog>(),
+          ),
         ),
       ],
       child: MaterialApp(

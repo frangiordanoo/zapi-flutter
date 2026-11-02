@@ -19,6 +19,7 @@ import 'package:zapi/features/client/product_list/client_product_list_screen.dar
 import 'package:zapi/features/client/scanner/client_scanner_screen.dart';
 import 'package:zapi/features/client/settings/client_settings_screen.dart';
 import 'package:zapi/features/splash/splash_screen.dart';
+import 'package:zapi/data/models/order.dart';
 import 'package:zapi/data/models/product.dart';
 
 /// Routing centralizado de la app.
@@ -87,7 +88,10 @@ class AppRouter {
         return _page(const ClientCheckoutScreen(), settings);
 
       case RouteNames.clientOrderConfirmation:
-        return _page(const ClientOrderConfirmationScreen(), settings);
+        return _page(
+          ClientOrderConfirmationScreen(order: settings.arguments as Order),
+          settings,
+        );
 
       // ---- Administrador ---------------------------------------------
       case RouteNames.adminLogin:

@@ -35,3 +35,9 @@ class ApiException extends AppException {
 class DataFormatException extends AppException {
   const DataFormatException(super.message);
 }
+
+/// La compra no se puede realizar (carrito vacio, producto inexistente,
+/// stock insuficiente, etc.). El mensaje se puede mostrar tal cual.
+class OrderValidationException extends AppException {
+  const OrderValidationException(super.message);
+}
