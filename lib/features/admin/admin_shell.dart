@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zapi/app/router/route_names.dart';
 import 'package:zapi/features/admin/dashboard/admin_dashboard_screen.dart';
 import 'package:zapi/features/admin/products/admin_products_screen.dart';
 import 'package:zapi/features/admin/stats/stats_controller.dart';
 import 'package:zapi/features/admin/stock/admin_stock_screen.dart';
 import 'package:zapi/features/admin/widgets/admin_bottom_navigation.dart';
+import 'package:zapi/state/auth_controller.dart';
 
 /// Contenedor de las 3 secciones principales del administrador
 /// (Estadisticas / Productos / Stock).
@@ -43,6 +45,19 @@ class _AdminShellState extends State<AdminShell> {
 
   @override
   Widget build(BuildContext context) {
+    // Guardia: solo un ADMIN con sesion iniciada ve estas pantallas. Si la
+    // sesion se pierde, se vuelve al login.
+    if (!context.watch<AuthController>().isAdmin) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          RouteNames.adminLogin,
+          (route) => false,
+        );
+      });
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: AdminBottomNavigation(

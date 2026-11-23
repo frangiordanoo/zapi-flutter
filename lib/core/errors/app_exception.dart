@@ -29,6 +29,12 @@ class ApiException extends AppException {
   final int statusCode;
 
   bool get isNotFound => statusCode == 404;
+
+  /// Falta el token o vencio (el JWT dura 8 horas).
+  bool get isUnauthorized => statusCode == 401;
+
+  /// El usuario esta autenticado pero no es ADMIN.
+  bool get isForbidden => statusCode == 403;
 }
 
 /// La respuesta llego bien pero no tiene el formato esperado.

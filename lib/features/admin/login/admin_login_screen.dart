@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:zapi/app/router/route_names.dart';
 import 'package:zapi/app/theme/app_colors.dart';
 import 'package:zapi/app/theme/app_text_styles.dart';
 import 'package:zapi/core/widgets/primary_button.dart';
+import 'package:zapi/state/auth_controller.dart';
+import 'package:zapi/state/product_catalog.dart';
 
 /// Pantalla de login del administrador.
 ///
-/// No valida credenciales reales: solo valida que el formulario este
-/// completo. Cuando exista un backend de autenticacion, `_handleLogin`
-/// deberia validar contra el mismo (por ejemplo con un `AuthService`,
-/// siguiendo el mismo patron que `ProductService`) y solo navegar si la
-/// respuesta es exitosa.
+/// Valida usuario y contraseña contra el backend (`POST /auth/login`, via
+/// [AuthController]). Solo deja pasar a usuarios con rol ADMIN; ante un
+/// error (credenciales incorrectas, sin conexion, rol EMPLOYEE) muestra el
+/// mensaje debajo del formulario.
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
 
@@ -20,25 +22,36 @@ class AdminLoginScreen extends StatefulWidget {
 
 class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _handleLogin() {
-    // NO hay autenticacion real: alcanza con que el formulario este
-    // completo para dejar pasar.
+  Future<void> _handleLogin() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    Navigator.of(context).pushReplacementNamed(RouteNames.adminHome);
+
+    final auth = context.read<AuthController>();
+    final catalog = context.read<ProductCatalog>();
+    final navigator = Navigator.of(context);
+
+    final ok = await auth.login(_usernameController.text, _passwordController.text);
+    if (!ok || !mounted) return;
+
+    // Con la sesion iniciada el catalogo tambien carga los productos
+    // ocultos y sin stock (`GET /products/all`).
+    catalog.load();
+    navigator.pushReplacementNamed(RouteNames.adminHome);
   }
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthController>();
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -62,17 +75,19 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   style: AppTextStyles.caption,
                 ),
                 const SizedBox(height: 32),
-                const Text('Correo Electrónico', style: AppTextStyles.bodyBold),
+                const Text('Usuario', style: AppTextStyles.bodyBold),
                 const SizedBox(height: 8),
                 TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
+                  controller: _usernameController,
+                  enabled: !auth.isLoading,
+                  autocorrect: false,
+                  textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
-                    hintText: 'ejemplo@correo.com',
-                    prefixIcon: Icon(Icons.mail_outline),
+                    hintText: 'admin',
+                    prefixIcon: Icon(Icons.person_outline),
                   ),
                   validator: (value) => (value == null || value.trim().isEmpty)
-                      ? 'Ingresá tu correo'
+                      ? 'Ingresá tu usuario'
                       : null,
                 ),
                 const SizedBox(height: 20),
@@ -80,7 +95,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _passwordController,
+                  enabled: !auth.isLoading,
                   obscureText: true,
+                  onFieldSubmitted: (_) => _handleLogin(),
                   decoration: const InputDecoration(
                     hintText: '••••••••',
                     prefixIcon: Icon(Icons.lock_outline),
@@ -90,15 +107,20 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                       : null,
                 ),
                 const SizedBox(height: 32),
-                PrimaryButton(label: 'Entrar', onPressed: _handleLogin),
-                const SizedBox(height: 8),
-                Center(
-                  child: Text(
-                    'La autenticación real se integrará más adelante.',
-                    style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
-                    textAlign: TextAlign.center,
+                if (auth.isLoading)
+                  const Center(child: CircularProgressIndicator())
+                else
+                  PrimaryButton(label: 'Entrar', onPressed: _handleLogin),
+                if (auth.errorMessage != null) ...[
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Text(
+                      auth.errorMessage!,
+                      style: AppTextStyles.caption.copyWith(color: AppColors.danger),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
