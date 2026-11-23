@@ -1,66 +1,47 @@
 import 'package:zapi/data/models/product.dart';
+import 'package:zapi/data/models/stock_review.dart';
 import 'package:zapi/data/services/product_service.dart';
 
 /// Intermediario entre las pantallas/estado y la API de productos.
 ///
-/// Lo que el backend SI soporta (listar, buscar por codigo, crear) se
-/// delega en [ProductService]. Editar, borrar y corregir stock todavia NO
-/// tienen endpoint, asi que esos cambios se guardan SOLO en memoria
-/// (mientras la app esta abierta) y se superponen a lo que devuelve la API:
-/// no se pierden al refrescar el listado, pero tampoco llegan al servidor.
-/// Cuando el backend sume esos endpoints, solo hay que reemplazar los tres
-/// metodos marcados con TODO(backend).
+/// Todas las operaciones (incluidas editar, ocultar, recuperar, sumar stock
+/// y revisar stock) se mandan al backend: ya no hay cambios "solo en
+/// memoria". Las operaciones de administrador necesitan una sesion con
+/// token (ver `AuthController`); si no, la API responde 401/403.
 class ProductRepository {
   ProductRepository(this._service);
 
   final ProductService _service;
 
-  final Map<String, Product> _localEdits = {};
-  final Set<String> _locallyDeletedCodes = {};
+  /// Productos activos con stock (lo que ve el cliente).
+  Future<List<Product>> getProducts() => _service.getProducts();
 
-  Future<List<Product>> getProducts() async {
-    final remote = await _service.getProducts();
-    return [
-      for (final product in remote)
-        if (!_locallyDeletedCodes.contains(product.code)) _withLocalEdits(product),
-    ];
-  }
+  /// ADMIN. Todos los productos, activos e inactivos.
+  Future<List<Product>> getAllProducts() => _service.getAllProducts();
 
-  /// `null` si el producto no existe (o fue borrado localmente).
-  Future<Product?> findByCode(String code) async {
+  /// `null` si el producto no existe.
+  Future<Product?> findByCode(String code) {
     final trimmed = code.trim();
-    if (trimmed.isEmpty || _locallyDeletedCodes.contains(trimmed)) return null;
-    final product = await _service.getProductByCode(trimmed);
-    return product == null ? null : _withLocalEdits(product);
+    if (trimmed.isEmpty) return Future.value(null);
+    return _service.getProductByCode(trimmed);
   }
 
-  Future<Product> createProduct(Product product) async {
-    final created = await _service.createProduct(product);
-    _locallyDeletedCodes.remove(created.code);
-    _localEdits.remove(created.code);
-    return created;
-  }
+  Future<Product> createProduct(Product product) => _service.createProduct(product);
 
-  // TODO(backend): PUT/PATCH /products/:id
-  Future<void> updateProduct(Product product) async {
-    _localEdits[product.code] = product;
-  }
+  /// Edita SOLO nombre y precio (lo unico que permite el backend).
+  Future<Product> updateProduct(Product product) =>
+      _service.updateProduct(product.code, name: product.name, price: product.price);
 
-  // TODO(backend): DELETE /products/:id (borrado logico)
-  Future<void> deleteProduct(Product product) async {
-    _locallyDeletedCodes.add(product.code);
-    _localEdits.remove(product.code);
-  }
+  /// Borrado logico: el producto queda inactivo y se puede recuperar.
+  Future<Product> hideProduct(Product product) => _service.hideProduct(product.code);
 
-  // TODO(backend): PATCH /products/:id/stock
-  Future<void> updateStock(Product product, int newStock) async {
-    final base = _localEdits[product.code] ?? product;
-    _localEdits[product.code] = base.copyWith(stock: newStock);
-  }
+  Future<Product> restoreProduct(Product product) => _service.restoreProduct(product.code);
 
-  Product _withLocalEdits(Product remote) {
-    final edit = _localEdits[remote.code];
-    if (edit == null) return remote;
-    return edit.copyWith(id: remote.id, createdAt: remote.createdAt);
-  }
+  /// Suma [quantity] unidades al stock actual (no lo reemplaza).
+  Future<Product> addStock(Product product, int quantity) =>
+      _service.addStock(product.code, quantity);
+
+  /// Revision fisica: el backend deja el stock igual al conteo.
+  Future<List<StockReviewResult>> reviewStock(List<StockCount> counts) =>
+      _service.reviewStock(counts);
 }

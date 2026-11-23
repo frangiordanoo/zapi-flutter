@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zapi/app/router/route_names.dart';
 import 'package:zapi/app/theme/app_colors.dart';
+import 'package:zapi/core/errors/app_exception.dart';
 import 'package:zapi/core/widgets/app_header.dart';
 import 'package:zapi/core/widgets/app_search_bar.dart';
 import 'package:zapi/core/widgets/catalog_content.dart';
@@ -12,9 +13,13 @@ import 'package:zapi/data/models/product.dart';
 import 'package:zapi/state/product_catalog.dart';
 
 /// Pantalla de administracion de productos: buscar, editar (nombre y
-/// precio, via [EditProductDialog]), borrar (soft delete, via
-/// [DeleteProductDialog] + `ProductCatalog.deleteProduct`; todavia sin
-/// endpoint, solo se oculta en esta sesion) y navegar a Add Product con el boton flotante "+".
+/// precio, via [EditProductDialog] -> `PUT /products/:code`), ocultar
+/// (borrado logico, via [DeleteProductDialog] -> `PATCH /products/:code`),
+/// recuperar un producto oculto (`PATCH /products/:code/restore`) y navegar
+/// a Add Product con el boton flotante "+".
+///
+/// Lista TODOS los productos (`GET /products/all`): los ocultos aparecen
+/// atenuados con un boton para recuperarlos.
 class AdminProductsScreen extends StatefulWidget {
   const AdminProductsScreen({super.key});
 
@@ -31,28 +36,48 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
     return products.where((p) => p.name.toLowerCase().contains(query)).toList();
   }
 
+  void _showError(AppException e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+  }
+
   Future<void> _handleEdit(Product product) async {
     final updated = await showDialog<Product>(
       context: context,
       builder: (_) => EditProductDialog(product: product),
     );
     if (updated == null || !mounted) return;
-    await context.read<ProductCatalog>().updateProduct(updated);
+    try {
+      await context.read<ProductCatalog>().updateProduct(updated);
+    } on AppException catch (e) {
+      if (mounted) _showError(e);
+    }
   }
 
-  Future<void> _handleDelete(Product product) async {
+  Future<void> _handleHide(Product product) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => const DeleteProductDialog(),
     );
     if (confirmed != true || !mounted) return;
-    await context.read<ProductCatalog>().deleteProduct(product);
+    try {
+      await context.read<ProductCatalog>().hideProduct(product);
+    } on AppException catch (e) {
+      if (mounted) _showError(e);
+    }
+  }
+
+  Future<void> _handleRestore(Product product) async {
+    try {
+      await context.read<ProductCatalog>().restoreProduct(product);
+    } on AppException catch (e) {
+      if (mounted) _showError(e);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final catalog = context.watch<ProductCatalog>();
-    final products = _filter(catalog.products);
+    final products = _filter(catalog.adminProducts);
 
     return Scaffold(
       appBar: const AppHeader(title: 'Productos', light: true),
@@ -72,6 +97,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
               Expanded(
                 child: CatalogContent(
                   catalog: catalog,
+                  admin: true,
                   child: ListView.separated(
                     itemCount: products.length,
                     separatorBuilder: (_, __) =>
@@ -84,22 +110,35 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                           RouteNames.adminProductDetail,
                           arguments: product,
                         ),
-                        child: ProductItem(
-                          product: product,
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit_outlined,
-                                    color: AppColors.primary),
-                                onPressed: () => _handleEdit(product),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline,
-                                    color: AppColors.danger),
-                                onPressed: () => _handleDelete(product),
-                              ),
-                            ],
+                        child: Opacity(
+                          opacity: product.isActive ? 1 : 0.5,
+                          child: ProductItem(
+                            product: product,
+                            subtitle: product.isActive ? null : 'Oculto',
+                            trailing: product.isActive
+                                ? Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        tooltip: 'Editar',
+                                        icon: const Icon(Icons.edit_outlined,
+                                            color: AppColors.primary),
+                                        onPressed: () => _handleEdit(product),
+                                      ),
+                                      IconButton(
+                                        tooltip: 'Ocultar',
+                                        icon: const Icon(Icons.visibility_off_outlined,
+                                            color: AppColors.danger),
+                                        onPressed: () => _handleHide(product),
+                                      ),
+                                    ],
+                                  )
+                                : IconButton(
+                                    tooltip: 'Recuperar',
+                                    icon: const Icon(Icons.restore,
+                                        color: AppColors.primary),
+                                    onPressed: () => _handleRestore(product),
+                                  ),
                           ),
                         ),
                       );

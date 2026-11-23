@@ -11,16 +11,26 @@ import 'package:zapi/state/product_catalog.dart';
 ///
 /// Ocupa el espacio disponible: usarlo dentro de un `Expanded`.
 class CatalogContent extends StatelessWidget {
-  const CatalogContent({super.key, required this.catalog, required this.child});
+  const CatalogContent({
+    super.key,
+    required this.catalog,
+    required this.child,
+    this.admin = false,
+  });
 
   final ProductCatalog catalog;
+
+  /// `true` en las pantallas de administrador: "hay datos" se mide contra la
+  /// lista completa (`adminProducts`) y no contra la publica.
+  final bool admin;
 
   /// El contenido normal (por ejemplo la lista de productos).
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final hasData = catalog.products.isNotEmpty;
+    final hasData =
+        admin ? catalog.adminProducts.isNotEmpty : catalog.products.isNotEmpty;
 
     if (!hasData && catalog.isLoading) {
       return const Center(child: CircularProgressIndicator());

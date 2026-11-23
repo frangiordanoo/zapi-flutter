@@ -13,6 +13,7 @@ import 'package:zapi/core/errors/app_exception.dart';
 /// - `code` es SIEMPRE un `String` (puede tener ceros iniciales o letras).
 /// - `price` llega como string (es un `Decimal` en el backend) pero se
 ///   acepta tambien un numero.
+/// - `isActive` puede faltar (se asume activo).
 /// - `category` y `createdAt` pueden faltar: se usan valores por defecto
 ///   en vez de romper todo el listado.
 class Product {
@@ -24,6 +25,10 @@ class Product {
   final DateTime? createdAt;
   final String category;
 
+  /// `false` cuando el administrador lo ocultó (borrado lógico). La API
+  /// pública solo devuelve productos activos; `/products/all` trae todos.
+  final bool isActive;
+
   static const String defaultCategory = 'Sin categoría';
 
   const Product({
@@ -34,6 +39,7 @@ class Product {
     required this.stock,
     required this.category,
     this.createdAt,
+    this.isActive = true,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -59,6 +65,7 @@ class Product {
       stock: _asInt(json['stock']) ?? 0,
       category: category.isEmpty ? defaultCategory : category,
       createdAt: createdAt,
+      isActive: json['isActive'] is bool ? json['isActive'] as bool : true,
     );
   }
 
@@ -79,6 +86,7 @@ class Product {
     int? stock,
     DateTime? createdAt,
     String? category,
+    bool? isActive,
   }) {
     return Product(
       id: id ?? this.id,
@@ -88,6 +96,7 @@ class Product {
       stock: stock ?? this.stock,
       createdAt: createdAt ?? this.createdAt,
       category: category ?? this.category,
+      isActive: isActive ?? this.isActive,
     );
   }
 

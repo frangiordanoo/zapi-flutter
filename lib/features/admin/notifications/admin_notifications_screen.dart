@@ -15,7 +15,7 @@ class AdminNotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final catalog = context.watch<ProductCatalog>();
-    final alerts = catalog.products.where((p) => p.stock <= 5).toList()
+    final alerts = catalog.stockProducts.where((p) => p.stock <= 5).toList()
       ..sort((a, b) => a.stock.compareTo(b.stock));
 
     return Scaffold(
@@ -23,6 +23,7 @@ class AdminNotificationsScreen extends StatelessWidget {
       body: SafeArea(
         child: CatalogContent(
           catalog: catalog,
+          admin: true,
           child: alerts.isEmpty
             ? const EmptyState(
                 icon: Icons.notifications_none,

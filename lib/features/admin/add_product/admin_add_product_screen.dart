@@ -25,6 +25,9 @@ class AdminAddProductScreen extends StatefulWidget {
 class _AdminAddProductScreenState extends State<AdminAddProductScreen> {
   final _formKey = GlobalKey<FormState>();
   String? _detectedCode;
+
+  /// Codigo escaneado que YA esta cargado: no se deja crear de nuevo.
+  String? _existingCode;
   bool _submitting = false;
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
@@ -44,6 +47,28 @@ class _AdminAddProductScreenState extends State<AdminAddProductScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  /// Al escanear se consulta al backend si el producto ya existe (como el
+  /// frontend web): si existe no se acepta el codigo. `GET /products/:code`
+  /// solo ve productos activos, asi que tambien se miran los ocultos.
+  Future<void> _handleCodeDetected(String code) async {
+    final catalog = context.read<ProductCatalog>();
+    Product? existing;
+    try {
+      existing = await catalog.findByCode(code);
+    } on AppException catch (e) {
+      if (mounted) _showMessage('No se pudo verificar el código: ${e.message}');
+      return;
+    }
+    if (!mounted) return;
+
+    final alreadyStored =
+        existing != null || catalog.adminProducts.any((p) => p.code == code);
+    setState(() {
+      _existingCode = alreadyStored ? code : null;
+      _detectedCode = alreadyStored ? null : code;
+    });
+  }
+
   Future<void> _handleUpload() async {
     if (_submitting) return;
 
@@ -54,7 +79,8 @@ class _AdminAddProductScreenState extends State<AdminAddProductScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     final catalog = context.read<ProductCatalog>();
-    if (catalog.products.any((p) => p.code == _detectedCode)) {
+    if (catalog.products.any((p) => p.code == _detectedCode) ||
+        catalog.adminProducts.any((p) => p.code == _detectedCode)) {
       _showMessage('Ya existe un producto con el código $_detectedCode');
       return;
     }
@@ -77,7 +103,10 @@ class _AdminAddProductScreenState extends State<AdminAddProductScreen> {
       _priceController.clear();
       _stockController.clear();
       _categoryController.clear();
-      setState(() => _detectedCode = null);
+      setState(() {
+        _detectedCode = null;
+        _existingCode = null;
+      });
     } on AppException catch (e) {
       if (!mounted) return;
       _showMessage('No se pudo crear el producto: ${e.message}');
@@ -90,7 +119,7 @@ class _AdminAddProductScreenState extends State<AdminAddProductScreen> {
   Widget build(BuildContext context) {
     final existingCategories = (context
             .watch<ProductCatalog>()
-            .products
+            .stockProducts
             .map((p) => p.category)
             .where((c) => c != Product.defaultCategory)
             .toSet()
@@ -111,21 +140,27 @@ class _AdminAddProductScreenState extends State<AdminAddProductScreen> {
                   // Para dar de alta hace falta un codigo que todavia no exista.
                   simulatedCode: () =>
                       '779${DateTime.now().millisecondsSinceEpoch % 10000000000}',
-                  onCodeDetected: (code) => setState(() => _detectedCode = code),
+                  onCodeDetected: _handleCodeDetected,
                 ),
                 const SizedBox(height: 16),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
+                    color: _existingCode != null
+                        ? AppColors.danger
+                        : AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    _detectedCode == null
-                        ? 'No se detectó ningún código'
-                        : 'Código detectado:\n$_detectedCode',
-                    style: AppTextStyles.bodyBold,
+                    _existingCode != null
+                        ? 'Este producto ya está almacenado'
+                        : _detectedCode == null
+                            ? 'No se detectó ningún código'
+                            : 'Código detectado:\n$_detectedCode',
+                    style: AppTextStyles.bodyBold.copyWith(
+                      color: _existingCode != null ? Colors.white : null,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -178,8 +213,9 @@ class _AdminAddProductScreenState extends State<AdminAddProductScreen> {
                   validator: (value) {
                     final parsed =
                         double.tryParse((value ?? '').trim().replaceAll(',', '.'));
-                    if (parsed == null || parsed < 0 || !parsed.isFinite) {
-                      return 'Ingresá un precio válido (no negativo)';
+                    // El backend exige un precio mayor que 0.
+                    if (parsed == null || parsed <= 0 || !parsed.isFinite) {
+                      return 'El precio debe ser mayor a 0';
                     }
                     return null;
                   },

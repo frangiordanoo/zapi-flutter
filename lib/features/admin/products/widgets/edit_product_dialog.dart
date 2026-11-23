@@ -5,8 +5,12 @@ import 'package:zapi/data/models/product.dart';
 
 /// Modal para editar nombre y precio de un producto.
 ///
-/// A proposito NO permite tocar codigo, stock ni categoria (ver
-/// requerimiento de la pantalla Admin > Productos).
+/// A proposito NO permite tocar codigo, stock ni categoria: el backend
+/// (`PUT /products/:code`) solo acepta nombre y precio.
+///
+/// Validaciones (las mismas que el frontend web y el backend): nombre de 2 a
+/// 100 caracteres y precio mayor que 0. Si algo es invalido se muestra el
+/// error y el dialogo NO se cierra.
 ///
 /// Uso:
 /// ```dart
@@ -26,6 +30,7 @@ class EditProductDialog extends StatefulWidget {
 }
 
 class _EditProductDialogState extends State<EditProductDialog> {
+  final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController =
       TextEditingController(text: widget.product.name);
   late final TextEditingController _priceController =
@@ -38,12 +43,29 @@ class _EditProductDialogState extends State<EditProductDialog> {
     super.dispose();
   }
 
+  static double? _parsePrice(String? text) =>
+      double.tryParse((text ?? '').trim().replaceAll(',', '.'));
+
+  String? _validateName(String? value) {
+    final name = (value ?? '').trim();
+    if (name.length < 2) return 'El nombre debe tener al menos 2 caracteres';
+    if (name.length > 100) return 'El nombre no puede superar los 100 caracteres';
+    return null;
+  }
+
+  String? _validatePrice(String? value) {
+    final price = _parsePrice(value);
+    if (price == null || !price.isFinite) return 'El precio debe ser un número';
+    if (price <= 0) return 'El precio debe ser mayor que 0';
+    return null;
+  }
+
   void _handleSave() {
-    final price = double.tryParse(_priceController.text.replaceAll(',', '.'));
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     Navigator.of(context).pop(
       widget.product.copyWith(
         name: _nameController.text.trim(),
-        price: price ?? widget.product.price,
+        price: _parsePrice(_priceController.text),
       ),
     );
   }
@@ -51,22 +73,26 @@ class _EditProductDialogState extends State<EditProductDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Editar de producto'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Nombre'),
-          const SizedBox(height: 6),
-          TextField(controller: _nameController),
-          const SizedBox(height: 16),
-          const Text('Precio'),
-          const SizedBox(height: 6),
-          TextField(
-            controller: _priceController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          ),
-        ],
+      title: const Text('Editar producto'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Nombre'),
+            const SizedBox(height: 6),
+            TextFormField(controller: _nameController, validator: _validateName),
+            const SizedBox(height: 16),
+            const Text('Precio'),
+            const SizedBox(height: 6),
+            TextFormField(
+              controller: _priceController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              validator: _validatePrice,
+            ),
+          ],
+        ),
       ),
       actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       // OJO: AlertDialog envuelve `actions` en un OverflowBar, que no
