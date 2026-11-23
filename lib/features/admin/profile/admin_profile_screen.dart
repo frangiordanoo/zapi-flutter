@@ -1,33 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:zapi/app/router/route_names.dart';
 import 'package:zapi/app/theme/app_colors.dart';
 import 'package:zapi/app/theme/app_text_styles.dart';
 import 'package:zapi/core/widgets/app_header.dart';
+import 'package:zapi/features/admin/stats/stats_controller.dart';
+import 'package:zapi/state/auth_controller.dart';
+import 'package:zapi/state/product_catalog.dart';
+import 'package:zapi/state/sales_history_controller.dart';
 
-/// Perfil / configuración del administrador logueado (datos mock, sin
-/// autenticación real todavía, ver lib/features/admin/login).
+/// Perfil del administrador logueado (usuario real de `/auth/login`) y
+/// cierre de sesion.
 class AdminProfileScreen extends StatelessWidget {
   const AdminProfileScreen({super.key});
 
+  void _logout(BuildContext context) {
+    context.read<AuthController>().logout();
+    context.read<StatsController>().clear();
+    context.read<SalesHistoryController>().clear();
+    // Sin sesion el catalogo vuelve a ser solo el publico.
+    context.read<ProductCatalog>().load();
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      RouteNames.clientCart,
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthController>().user;
+
     return Scaffold(
       appBar: const AppHeader(title: 'Perfil', showBackButton: true),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            const Center(
+            Center(
               child: Column(
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 40,
                     backgroundColor: AppColors.primaryLight,
                     child: Icon(Icons.person, size: 44, color: AppColors.primary),
                   ),
-                  SizedBox(height: 12),
-                  Text('Administrador Zapi', style: AppTextStyles.sectionTitle),
-                  Text('admin@zapi.com', style: AppTextStyles.caption),
+                  const SizedBox(height: 12),
+                  Text(user?.username ?? 'Administrador Zapi',
+                      style: AppTextStyles.sectionTitle),
+                  const Text('Administrador', style: AppTextStyles.caption),
                 ],
               ),
             ),
@@ -38,10 +58,7 @@ class AdminProfileScreen extends StatelessWidget {
               icon: Icons.logout,
               label: 'Cerrar sesión',
               color: AppColors.danger,
-              onTap: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                RouteNames.clientCart,
-                (route) => false,
-              ),
+              onTap: () => _logout(context),
             ),
           ],
         ),

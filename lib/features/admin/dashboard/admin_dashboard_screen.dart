@@ -102,7 +102,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildContent(SalesStats stats, ProductCatalog catalog) {
-    final lowStockProducts = catalog.products.where((p) => p.stock <= 5).toList()
+    final lowStockProducts = catalog.stockProducts.where((p) => p.stock <= 5).toList()
       ..sort((a, b) => a.stock.compareTo(b.stock));
     final best = stats.bestSeller;
 

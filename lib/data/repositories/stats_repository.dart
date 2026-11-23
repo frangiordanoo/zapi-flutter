@@ -4,15 +4,22 @@ import 'package:zapi/data/models/sales_stats.dart';
 import 'package:zapi/data/repositories/product_repository.dart';
 import 'package:zapi/data/services/sales_data_source.dart';
 
-/// Arma las estadisticas del administrador combinando las ventas (hoy
-/// simuladas) con los productos reales de la API.
+/// Arma las estadisticas del administrador combinando las ventas de una
+/// [SalesDataSource] con los productos de la API.
+///
+/// IMPORTANTE: en la app las estadisticas usan ventas SIMULADAS
+/// (`MockSalesDataSource`), porque el backend todavia no ofrece
+/// estadisticas. El historial de ventas, en cambio, es real y NO pasa por
+/// aca (ver `SalesHistoryController`).
 ///
 /// Reglas:
-/// - Nombre, precio y categoria salen SIEMPRE de la API; las ventas solo
-///   referencian productos por `code`.
-/// - Una linea de venta cuyo producto ya no existe en la API se ignora
-///   (no se inventa un producto). Si una venta se queda sin lineas, se
-///   descarta completa.
+/// - Si la linea de venta trae nombre y precio (`priceAtSale`), se usan
+///   ESOS: asi un producto editado u ocultado no cambia ventas pasadas. La
+///   categoria sale del catalogo si el producto todavia esta.
+/// - Si la linea no trae precio (ventas simuladas), nombre y precio salen
+///   del catalogo; una linea cuyo producto ya no existe se ignora (no se
+///   inventa un producto). Si una venta se queda sin lineas, se descarta
+///   completa.
 /// - Todas las metricas salen de la MISMA lista de ventas, asi que
 ///   totales, graficos e historial no pueden contradecirse.
 /// - Es de solo lectura: no toca el stock ni escribe en la API.
@@ -44,6 +51,7 @@ class StatsRepository {
     required DateTime now,
   }) {
     final productsByCode = {for (final p in products) p.code: p};
+    final resolvedByCode = <String, Product>{};
     final today = DateTime(now.year, now.month, now.day);
     final firstDay = DateTime(today.year, today.month, today.day - (periodDays - 1));
 
@@ -60,9 +68,25 @@ class StatsRepository {
       var itemsCount = 0;
       var total = 0.0;
       for (final item in sale.items) {
-        final product = productsByCode[item.productCode];
-        if (product == null || item.quantity <= 0) continue;
-        final lineTotal = product.price * item.quantity;
+        if (item.quantity <= 0) continue;
+        final catalogProduct = productsByCode[item.productCode];
+        final unitPrice = item.unitPrice ?? catalogProduct?.price;
+        if (unitPrice == null) continue;
+
+        final product = resolvedByCode.putIfAbsent(
+          item.productCode,
+          () =>
+              catalogProduct ??
+              Product(
+                id: 0,
+                code: item.productCode,
+                name: item.productName ?? item.productCode,
+                price: unitPrice,
+                stock: 0,
+                category: Product.defaultCategory,
+              ),
+        );
+        final lineTotal = unitPrice * item.quantity;
         itemsCount += item.quantity;
         total += lineTotal;
         unitsByCode.update(product.code, (u) => u + item.quantity,
@@ -100,7 +124,7 @@ class StatsRepository {
     final topProducts = [
       for (final entry in unitsByCode.entries)
         ProductSales(
-          product: productsByCode[entry.key]!,
+          product: resolvedByCode[entry.key]!,
           units: entry.value,
           revenue: revenueByCode[entry.key]!,
         ),
