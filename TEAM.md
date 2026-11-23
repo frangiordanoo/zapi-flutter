@@ -91,7 +91,7 @@ igual en web).
 ## Dónde está todo
 
 - **Rutas**: `lib/app/router/` (nombres en `route_names.dart`, mapeo en `app_router.dart`).
-- **Mocks**: `lib/data/mocks/` (ventas simuladas para las estadísticas). Los productos NO son mock: vienen de la API.
+- **Mocks**: `lib/data/mocks/` (ventas simuladas para las estadísticas, porque el backend todavía no tiene estadísticas). Los productos y el historial de ventas NO son mock: vienen de la API.
 - **Modelos**: `lib/data/models/` (`Product`, `CartItem`, `Sale`, `SalesStats`).
 - **Componentes reutilizables**: `lib/core/widgets/` (headers, botones, items de lista, etc.) y `lib/features/admin/widgets/` (navbar del admin).
 - **Estado compartido**: `lib/state/` (`CartController` para el carrito, `ProductCatalog` para el catálogo de productos). Ambos son `ChangeNotifier` simples, expuestos con `provider` desde `lib/app/app.dart`.

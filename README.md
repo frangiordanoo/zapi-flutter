@@ -10,10 +10,10 @@ gestionar productos, stock y ver estadísticas de ventas.
 Este repo arrancó como una base arquitectónica para que el equipo (7
 personas, sin experiencia previa significativa en Flutter) trabajara en
 paralelo, y terminó de cerrarse como demo funcional completa para
-entregar. **No** implementa backend, pagos ni autenticación real: todo
-eso está simulado con datos mock (no hay servidor propio de Zapi), pero
-la app es navegable de punta a punta, incluyendo escaneo de código de
-barras con cámara real.
+entregar. Hoy es el cliente Flutter del backend real de Zapi (login con
+JWT, productos, stock, pago con Mercado Pago e historial de ventas; ver
+"Integración con el backend") y mantiene el escaneo de código de barras
+con cámara real.
 
 ## Tecnologías
 
@@ -85,34 +85,54 @@ flutter run
 
 ### Administrador
 
-- Login (sin autenticación real todavía).
-- Dashboard de estadísticas (ventas, producto más vendido, gráficos).
-- Gestión de productos: buscar, editar (nombre/precio), borrar (soft delete).
-- Gestión de stock: ver stock actual y hacer una revisión física.
+- Login real contra el backend (solo usuarios con rol ADMIN).
+- Dashboard de estadísticas (ventas, producto más vendido, gráficos). **Con datos simulados**:
+  el backend todavía no tiene estadísticas.
+- Historial de ventas real, agrupado por día (Hoy / Ayer / fecha) con el total de cada día.
+- Gestión de productos: buscar, editar (nombre/precio), ocultar y recuperar.
+- Gestión de stock: sumar unidades y hacer una revisión física.
 - Alta de productos nuevos, con escaneo de código de barras.
 
-## Qué está implementado
+## Integración con el backend
 
-- Todas las pantallas listadas arriba, navegables de punta a punta.
-- Routing centralizado (`lib/app/router/`).
-- Componentes reutilizables (header, botones, items de lista, buscador, selector de cantidad, scanner).
-- Modelos y datos mock realistas.
-- Capa de servicios preparada para reemplazar mocks por un backend real sin tocar las pantallas.
-- Escaneo de código de barras con **cámara real** (`mobile_scanner`, funciona en Android/iOS/Web/desktop), con un botón "Simular escaneo" de respaldo por si no hay cámara disponible o un producto físico a mano.
-- Validación de formularios en Login y Add Product.
+La app consume el backend real (`https://zapi-rqos.onrender.com`, repo
+[palavecino12/Zapi](https://github.com/palavecino12/Zapi), carpeta `backend/`).
+Todo pasa por un único `ApiClient`, que agrega `Authorization: Bearer <token>`
+cuando hay sesión de administrador.
 
-## Qué está mockeado
+| Función en la app | Endpoint |
+|---|---|
+| Login admin (solo rol ADMIN) | `POST /auth/login` |
+| Catálogo del cliente / búsqueda por código | `GET /products`, `GET /products/:code` |
+| Catálogo completo del admin (con ocultos y sin stock) | `GET /products/all` |
+| Alta / edición (nombre y precio) | `POST /products`, `PUT /products/:code` |
+| Ocultar / recuperar producto | `PATCH /products/:code`, `PATCH /products/:code/restore` |
+| Sumar stock | `PATCH /products/:code/stock` |
+| Revisión física de stock (**también actualiza el stock**) | `POST /products/review-stock` |
+| Pagar | `POST /sales/checkout` -> abre la URL de Mercado Pago |
+| Historial de ventas pagadas | `GET /sales/history` (responde `{"history": [...]}`) |
+| Estadísticas del dashboard | **Ninguno: simuladas** (`MockSalesDataSource`) |
 
-- **Productos**: NO son mock. Vienen de la API real (`https://zapi-rqos.onrender.com/products`: listar, buscar por código y crear).
-- **Estadísticas / historial de ventas**: ventas simuladas en `lib/data/mocks/mock_sales_data_source.dart` (volumen bajo, últimos 7 días). Referencian los productos reales por `code`; nombres y precios salen siempre de la API.
-- **Autenticación**: el login acepta cualquier valor (valida solo que el formulario esté completo), no valida contra ningún backend.
-- **Pago**: el botón "Pagar" en el Scanner es solo visual, no llama a ningún servicio.
+Cosas a tener en cuenta:
 
-## Qué queda pendiente de backend
+- **El pago no se puede confirmar desde la app.** El backend lo confirma por webhook de
+  Mercado Pago y recién ahí descuenta el stock; no existe un endpoint para consultar el
+  estado de una venta. Por eso, tras abrir Mercado Pago la app muestra "Completá tu pago",
+  no "compra exitosa".
+- La sesión de admin vive solo en memoria (el token dura 8 h): al cerrar la app hay que volver a loguearse.
+  Si el servidor responde 401 (token vencido), la app cierra la sesión y vuelve al login, igual que el
+  frontend web.
+- **Las estadísticas siguen simuladas a propósito.** `/sales/statistics` existe pero el backend indica que
+  no funciona, así que el dashboard usa ventas de ejemplo (`lib/data/mocks/`) hasta que el backend las
+  ofrezca. El historial de ventas, en cambio, es real.
+- El día y la hora del historial se muestran en hora de Argentina (UTC-3), igual que el backend al agrupar.
+- Los nombres y precios del historial son los del momento de la venta (`priceAtSale`).
+- Validaciones como el backend: el precio de un producto debe ser mayor que 0; al editar, el nombre
+  lleva de 2 a 100 caracteres.
 
-- Endpoints para **editar, borrar y corregir stock** de productos: hoy esos cambios se guardan solo en memoria durante la sesión (ver `lib/data/repositories/product_repository.dart`, marcados con `TODO(backend)`).
-- Endpoint de ventas: reemplazar `MockSalesDataSource` por una implementación HTTP de `SalesDataSource`.
-- Autenticación real de administrador.
-- Integración de pago (Mercado Pago u otro medio).
-- Persistencia real de stock (hoy se actualiza solo en memoria).
+## Qué queda pendiente
+
+- Persistir la sesión (por ejemplo con `flutter_secure_storage`).
+- Que el backend exponga el estado de una venta para poder confirmar el pago en la app.
+- Proteger `/sales/history` en el backend (hoy no exige token).
 - SVG oficiales de Zapi (`assets/svg/`, ver `assets/svg/PLACEHOLDER.md`).
