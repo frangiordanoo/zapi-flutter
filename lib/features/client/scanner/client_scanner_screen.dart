@@ -18,9 +18,8 @@ import 'package:zapi/state/product_catalog.dart';
 /// Usa [BarcodeScannerView] (camara real) para detectar un codigo,
 /// busca el producto en la API (`GET /products/:code`) con
 /// `ProductCatalog.findByCode` y lo agrega al
-/// carrito compartido (`CartController`). El boton "Pagar" es
-/// intencionalmente solo visual: todavia falta integrar un medio de
-/// pago real (Mercado Pago / backend), ver el TODO en su `onPressed`.
+/// carrito compartido (`CartController`). El boton "Pagar" lleva al
+/// resumen de compra, que inicia el pago con Mercado Pago.
 class ClientScannerScreen extends StatefulWidget {
   const ClientScannerScreen({super.key});
 
@@ -57,7 +56,8 @@ class _ClientScannerScreenState extends State<ClientScannerScreen> {
     if (!mounted) return;
 
     if (product == null) {
-      setState(() => _statusText = 'No se encontró ningún producto');
+      // Mismo texto que el frontend web.
+      setState(() => _statusText = 'Este producto no es parte del negocio');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Código $code no reconocido')),
       );

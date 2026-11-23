@@ -1,7 +1,11 @@
-/// Estado de una orden. Hoy solo existe `paid` porque el pago es simulado y
-/// una orden unicamente se crea cuando el pago sale bien.
+/// Estado de una orden desde el punto de vista de la app.
+///
+/// La app NUNCA puede confirmar un pago: eso lo hace el backend cuando
+/// Mercado Pago le avisa por webhook (y recien ahi descuenta el stock y la
+/// venta pasa a PAID). Volver de Mercado Pago a la app no prueba nada, por
+/// eso la unica situacion que la app conoce es "pago iniciado".
 enum OrderStatus {
-  paid('Pagado');
+  pending('Pendiente de pago');
 
   const OrderStatus(this.label);
 
@@ -26,20 +30,22 @@ class OrderItem {
   double get subtotal => unitPrice * quantity;
 }
 
-/// Compra confirmada. El total siempre se calcula a partir de los items.
+/// Pago iniciado: el carrito que se mando al backend y el link de Mercado
+/// Pago para completarlo. El total mostrado es informativo; el definitivo
+/// lo calcula el backend con los precios de su base de datos.
 class Order {
-  final int id;
   final DateTime date;
   final List<OrderItem> items;
   final String paymentMethod;
   final OrderStatus status;
+  final Uri checkoutUrl;
 
   const Order({
-    required this.id,
     required this.date,
     required this.items,
     required this.paymentMethod,
     required this.status,
+    required this.checkoutUrl,
   });
 
   double get total => items.fold(0, (sum, item) => sum + item.subtotal);

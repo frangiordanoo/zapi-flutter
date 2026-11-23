@@ -11,12 +11,15 @@ import 'package:zapi/core/widgets/primary_button.dart';
 import 'package:zapi/state/cart_controller.dart';
 import 'package:zapi/state/order_controller.dart';
 
-/// Resumen de compra y confirmacion del pago.
+/// Resumen de compra y pago con Mercado Pago.
 ///
 /// Muestra items, precio unitario, subtotales y total. Al confirmar, el
-/// [OrderController] valida el carrito (stock incluido), simula el pago y
-/// crea la orden; si sale bien se vacia el carrito y se muestra la
-/// confirmacion. El pago es una simulacion: no hay pasarela real todavia.
+/// [OrderController] le pide al backend el link de pago
+/// (`POST /sales/checkout`, que valida stock y calcula el total real) y
+/// abre Mercado Pago. Si sale bien se vacia el carrito y se pasa a la
+/// pantalla de "pago en curso". Si el backend rechaza la compra (por
+/// ejemplo stock insuficiente) se muestra su mensaje y el carrito queda
+/// intacto.
 class ClientCheckoutScreen extends StatefulWidget {
   const ClientCheckoutScreen({super.key});
 
@@ -25,20 +28,13 @@ class ClientCheckoutScreen extends StatefulWidget {
 }
 
 class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
-  String _paymentMethod = 'Mercado Pago';
-
-  static const _methods = ['Mercado Pago', 'Tarjeta', 'Efectivo'];
-
   Future<void> _handleConfirm() async {
     final cart = context.read<CartController>();
     final orders = context.read<OrderController>();
     final messenger = ScaffoldMessenger.of(context);
 
     try {
-      final order = await orders.placeOrder(
-        items: cart.items,
-        paymentMethod: _paymentMethod,
-      );
+      final order = await orders.startCheckout(cart.items);
       cart.clear();
       if (!mounted) return;
       Navigator.pushReplacementNamed(
@@ -102,22 +98,13 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
                           const Divider(height: 32, color: AppColors.border),
                           const Text('Medio de pago', style: AppTextStyles.sectionTitle),
                           const SizedBox(height: 8),
-                          RadioGroup<String>(
-                            groupValue: _paymentMethod,
-                            onChanged: (value) {
-                              if (!isProcessing) setState(() => _paymentMethod = value!);
-                            },
-                            child: Column(
-                              children: _methods
-                                  .map(
-                                    (method) => RadioListTile<String>(
-                                      contentPadding: EdgeInsets.zero,
-                                      value: method,
-                                      title: Text(method, style: AppTextStyles.body),
-                                      activeColor: AppColors.primary,
-                                    ),
-                                  )
-                                  .toList(),
+                          const ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(Icons.payments_outlined, color: AppColors.primary),
+                            title: Text('Mercado Pago', style: AppTextStyles.body),
+                            subtitle: Text(
+                              'Vas a completar el pago en Mercado Pago.',
+                              style: AppTextStyles.caption,
                             ),
                           ),
                         ],
@@ -137,13 +124,13 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
                   children: [
                     CircularProgressIndicator(),
                     SizedBox(height: 8),
-                    Text('Procesando pago…', style: AppTextStyles.caption),
+                    Text('Preparando el pago…', style: AppTextStyles.caption),
                   ],
                 )
               else
                 PrimaryButton(
-                  label: 'Confirmar pago',
-                  icon: Icons.check_circle_outline,
+                  label: 'Pagar con Mercado Pago',
+                  icon: Icons.open_in_new,
                   onPressed: cart.isEmpty ? null : _handleConfirm,
                 ),
             ],
